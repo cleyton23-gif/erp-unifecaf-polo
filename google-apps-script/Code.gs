@@ -3,6 +3,10 @@ const ERP_TABS = {
     name: 'ERP_Config',
     headers: ['chave', 'valor', 'atualizadoEm'],
   },
+  users: {
+    name: 'ERP_Usuarios',
+    headers: ['usuario', 'senha', 'nome', 'perfil', 'ativo'],
+  },
   overrides: {
     name: 'ERP_Overrides',
     headers: [
@@ -10,6 +14,9 @@ const ERP_TABS = {
       'status',
       'note',
       'lastContact',
+      'contactPhone',
+      'contactEmail',
+      'followStatus',
       'enrollmentPaid',
       'enrollmentExempt',
       'boletoSent',
@@ -37,7 +44,22 @@ const ERP_TABS = {
   },
   leads: {
     name: 'ERP_Leads',
-    headers: ['id', 'name', 'phone', 'course', 'origin', 'stage', 'consultant', 'createdAt'],
+    headers: [
+      'id',
+      'name',
+      'phone',
+      'course',
+      'origin',
+      'stage',
+      'consultant',
+      'boletoSent',
+      'boletoSentAt',
+      'enrollmentPaymentStatus',
+      'matriculatedAt',
+      'localStudentId',
+      'createdAt',
+      'updatedAt',
+    ],
   },
   localStudents: {
     name: 'ERP_Alunos_Local',
@@ -88,10 +110,16 @@ function doGet(event) {
     return json_({ ok: true, message: 'Abas ERP criadas ou validadas.' });
   }
 
+  if (action === 'users') {
+    setupErpTabs_();
+    return json_({ ok: true, users: readUsers_(), readAt: new Date().toISOString() });
+  }
+
   setupErpTabs_();
   return json_({
     ok: true,
     state: readState_(),
+    users: readUsers_(),
     readAt: new Date().toISOString(),
   });
 }
@@ -147,8 +175,13 @@ function setupErpTabs_() {
       sheet = spreadsheet.insertSheet(definition.name);
     }
 
-    const headerRange = sheet.getRange(1, 1, 1, definition.headers.length);
-    const existing = headerRange.getValues()[0];
+    let headerRange = sheet.getRange(1, 1, 1, definition.headers.length);
+    let existing = headerRange.getValues()[0];
+    if (definition.name === ERP_TABS.overrides.name) {
+      migrateOverrideColumns_(sheet, existing);
+      headerRange = sheet.getRange(1, 1, 1, definition.headers.length);
+      existing = headerRange.getValues()[0];
+    }
     const mustWrite = definition.headers.some((header, index) => existing[index] !== header);
     if (mustWrite) {
       headerRange.setValues([definition.headers]);
@@ -160,6 +193,17 @@ function setupErpTabs_() {
   });
 
   seedConfig_();
+  seedUsers_();
+}
+
+function migrateOverrideColumns_(sheet, existingHeaders) {
+  const hasContactColumns = existingHeaders.includes('contactPhone');
+  const hasOldFinancialColumns = existingHeaders.includes('enrollmentPaid');
+  if (hasContactColumns || !hasOldFinancialColumns) return;
+
+  const lastContactIndex = existingHeaders.indexOf('lastContact') + 1;
+  if (lastContactIndex < 1) return;
+  sheet.insertColumnsAfter(lastContactIndex, 3);
 }
 
 function seedConfig_() {
@@ -169,6 +213,8 @@ function seedConfig_() {
   const defaults = [
     ['enrollmentFee', '99'],
     ['monthlyTarget', '65'],
+    ['annualTarget', '780'],
+    ['monthlyTicket', '299'],
     ['computersTotal', '24'],
     ['computersMaintenance', '2'],
   ];
@@ -178,6 +224,19 @@ function seedConfig_() {
   if (rowsToAppend.length) {
     sheet.getRange(sheet.getLastRow() + 1, 1, rowsToAppend.length, 3).setValues(rowsToAppend);
   }
+}
+
+function seedUsers_() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(ERP_TABS.users.name);
+  const values = rowsToObjects_(sheet.getDataRange().getValues());
+  if (values.length) return;
+
+  sheet.getRange(2, 1, 4, 5).setValues([
+    ['admin', 'admin', 'Administrador', 'admin', 'SIM'],
+    ['financeiro', '123456', 'Responsavel Financeiro', 'financeiro', 'SIM'],
+    ['retencao', '123456', 'Responsavel Retencao', 'consultor', 'SIM'],
+    ['consultor', '123456', 'Consultor Comercial', 'consultor', 'SIM'],
+  ]);
 }
 
 function readState_() {
@@ -193,6 +252,16 @@ function readState_() {
     decisions: readArray_(ERP_TABS.decisions),
     settings: readSettings_(),
   };
+}
+
+function readUsers_() {
+  return readArray_(ERP_TABS.users).map((user) => ({
+    usuario: user.usuario || '',
+    senha: user.senha || '',
+    nome: user.nome || '',
+    perfil: user.perfil || 'consultor',
+    ativo: user.ativo || 'SIM',
+  }));
 }
 
 function writeState_(state) {
@@ -216,6 +285,9 @@ function readOverrides_() {
       status: row.status || '',
       note: row.note || '',
       lastContact: row.lastContact || '',
+      contactPhone: row.contactPhone || '',
+      contactEmail: row.contactEmail || '',
+      followStatus: row.followStatus || '',
       enrollmentPaid: String(row.enrollmentPaid).toLowerCase() === 'true',
       enrollmentExempt: String(row.enrollmentExempt).toLowerCase() === 'true',
       boletoSent: String(row.boletoSent).toLowerCase() === 'true',
@@ -233,6 +305,9 @@ function writeOverrides_(overrides) {
     status: value.status || '',
     note: value.note || '',
     lastContact: value.lastContact || '',
+    contactPhone: value.contactPhone || '',
+    contactEmail: value.contactEmail || '',
+    followStatus: value.followStatus || '',
     enrollmentPaid: Boolean(value.enrollmentPaid),
     enrollmentExempt: Boolean(value.enrollmentExempt),
     boletoSent: Boolean(value.boletoSent),

@@ -37,6 +37,22 @@ Usuário: admin
 Senha: admin
 ```
 
+Depois que o Apps Script estiver configurado, o app valida os usuários da aba:
+
+```text
+ERP_Usuarios
+```
+
+Usuários iniciais:
+
+```text
+usuario      senha   nome                    perfil       ativo
+admin        admin   Administrador           admin        SIM
+financeiro   123456  Responsavel Financeiro  financeiro   SIM
+retencao     123456  Responsavel Retencao    consultor    SIM
+consultor    123456  Consultor Comercial     consultor    SIM
+```
+
 ## 3. Testar se o app local está respondendo
 
 Em outro PowerShell:
@@ -95,6 +111,7 @@ O script criará estas abas:
 
 ```text
 ERP_Config
+ERP_Usuarios
 ERP_Overrides
 ERP_Retencao
 ERP_Cursos
@@ -106,6 +123,16 @@ ERP_Arquivo
 ERP_Decisoes
 ERP_Auditoria
 ```
+
+Você pode editar a aba `ERP_Usuarios` para cadastrar novos acessos. Use perfis:
+
+```text
+admin
+financeiro
+consultor
+```
+
+No app, abra o módulo **Segurança** para conferir quais usuários estão carregados. Usuários com perfil comum não conseguem trocar para Admin pela seleção de perfil; somente o usuário Admin pode alternar a visão para conferência.
 
 ### 4.3. Criar token de segurança
 
@@ -240,7 +267,28 @@ Se `state` retornar `424`, a variável `ERP_STATE_WEBAPP_URL` não foi configura
 3. No app, clique em **Sincronizar**.
 4. Os dados da sede atualizam, mas os registros locais continuam preservados nas abas ERP.
 
-### 8.2. Retenção AVA
+### 8.2. Cadastro local soberano
+
+1. Acesse **Cadastro**.
+2. Abra o aluno.
+3. Atualize, se necessário:
+   - Telefone/WhatsApp local;
+   - E-mail local;
+   - Status de acompanhamento.
+4. Salve.
+5. Esses dados ficam em `ERP_Overrides` e têm prioridade sobre a base da sede nas próximas sincronizações.
+
+### 8.3. Business Intelligence
+
+1. Acesse **BI**.
+2. Use o filtro de mês/ano para analisar o período.
+3. Acompanhe:
+   - meta mensal e anual;
+   - censo acadêmico por status;
+   - saúde financeira por Taxa de Matrícula e Mensalidades Recorrentes.
+4. Somente Admin e Financeiro visualizam o bloco de fluxo financeiro.
+
+### 8.4. Retenção AVA
 
 1. Acesse **Retenção AVA**.
 2. Verifique:
@@ -250,7 +298,17 @@ Se `state` retornar `424`, a variável `ERP_STATE_WEBAPP_URL` não foi configura
 4. Informe se houve contato, canal, motivo, responsável e observação.
 5. Salve.
 
-### 8.3. Matrícula do polo
+### 8.5. Matrículas e CRM de Leads
+
+1. Acesse **Matrículas** pelo menu azul ou pelo botão do painel inicial.
+2. Cadastre o candidato em **Novo lead**.
+3. Use o Kanban para arrastar o cartão entre as etapas do funil.
+4. Quando o cartão chegar em **Matriculado**, o sistema cria o registro acadêmico local e acende alerta se o boleto de matrícula ainda não foi enviado.
+5. No próprio cartão matriculado, atualize:
+   - boleto enviado;
+   - pagamento da matrícula: Pendente, Pago ou Isento.
+
+### 8.6. Matrícula do polo em aluno da base
 
 1. Acesse **Acompanhamento** ou **Financeiro**.
 2. Abra o aluno/candidato.
@@ -260,9 +318,9 @@ Se `state` retornar `424`, a variável `ERP_STATE_WEBAPP_URL` não foi configura
    - isento de matrícula, se aplicável.
 4. Salve.
 
-### 8.4. Decisão gerencial
+### 8.7. Decisão gerencial
 
-1. Acesse **Inteligência**.
+1. Acesse **Painel**.
 2. Leia os sinais automáticos.
 3. Registre uma decisão no plano de ação.
 4. A decisão será salva em `ERP_Decisoes`.

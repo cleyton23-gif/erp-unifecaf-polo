@@ -37,12 +37,14 @@ const MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', '
 
 const state = {
   profile: 'admin',
-  module: 'acompanhamento',
+  currentUser: null,
+  module: 'inteligencia',
   segment: 'todos',
   allRows: [],
   filteredRows: [],
   selectedKey: '',
   store: loadStore(),
+  users: [],
   remoteState: false,
   remoteSaveTimer: 0,
   remoteWarningShown: false,
@@ -51,8 +53,11 @@ const state = {
 const els = {
   loginView: document.querySelector('#loginView'),
   loginForm: document.querySelector('#loginForm'),
+  loginUser: document.querySelector('#loginUser'),
+  loginPassword: document.querySelector('#loginPassword'),
   appView: document.querySelector('#appView'),
   sourceStatus: document.querySelector('#sourceStatus'),
+  userStatus: document.querySelector('#userStatus'),
   syncStamp: document.querySelector('#syncStamp'),
   profileSelect: document.querySelector('#profileSelect'),
   refreshButton: document.querySelector('#refreshButton'),
@@ -71,6 +76,7 @@ const els = {
   toast: document.querySelector('#toast'),
   modules: {
     inteligencia: document.querySelector('#module-inteligencia'),
+    bi: document.querySelector('#module-bi'),
     acompanhamento: document.querySelector('#module-acompanhamento'),
     retencao: document.querySelector('#module-retencao'),
     financeiro: document.querySelector('#module-financeiro'),
@@ -92,38 +98,48 @@ function bootstrap() {
   bindEvents();
 
   if (localStorage.getItem('unifecaf-erp-session') === 'active') {
+    const savedUser = JSON.parse(localStorage.getItem('unifecaf-erp-user') || 'null');
+    state.currentUser = savedUser;
+    state.profile = savedUser?.perfil || 'admin';
     showApp();
   }
 }
 
 function bindEvents() {
-  els.loginForm.addEventListener('submit', (event) => {
+  els.loginForm.addEventListener('submit', async (event) => {
     event.preventDefault();
+    const ok = await authenticateUser(els.loginUser.value, els.loginPassword.value);
+    if (!ok) {
+      toast('Usuário ou senha inválidos, ou usuário inativo.');
+      return;
+    }
     localStorage.setItem('unifecaf-erp-session', 'active');
     showApp();
   });
 
   els.logoutButton.addEventListener('click', () => {
     localStorage.removeItem('unifecaf-erp-session');
+    localStorage.removeItem('unifecaf-erp-user');
+    state.currentUser = null;
     els.appView.hidden = true;
     els.loginView.hidden = false;
   });
 
   els.profileSelect.addEventListener('change', () => {
+    if (state.currentUser && normalize(state.currentUser.perfil) !== 'admin') {
+      state.profile = state.currentUser.perfil || 'consultor';
+      updateUserStatus();
+      toast('Somente Admin pode alternar a visão de perfil.');
+      return;
+    }
+
     state.profile = els.profileSelect.value;
+    updateUserStatus();
     render();
   });
 
   document.querySelectorAll('.nav-link').forEach((button) => {
-    button.addEventListener('click', () => {
-      state.module = button.dataset.module;
-      document.querySelectorAll('.nav-link').forEach((item) => item.classList.remove('active'));
-      button.classList.add('active');
-      Object.entries(els.modules).forEach(([name, element]) => {
-        element.classList.toggle('active', name === state.module);
-      });
-      render();
-    });
+    button.addEventListener('click', () => activateModule(button.dataset.module));
   });
 
   [els.searchInput, els.statusFilter, els.courseFilter, els.cohortFilter, els.unitFilter, els.debtFilter].forEach(
@@ -151,13 +167,95 @@ function bindEvents() {
   document.addEventListener('submit', handleSubmit);
   document.addEventListener('click', handleClick);
   document.addEventListener('change', handleChange);
+  document.addEventListener('dragstart', handleDragStart);
+  document.addEventListener('dragover', handleDragOver);
+  document.addEventListener('dragleave', handleDragLeave);
+  document.addEventListener('drop', handleDrop);
+  document.addEventListener('dragend', clearLeadDragState);
 }
 
 async function showApp() {
   els.loginView.hidden = true;
   els.appView.hidden = false;
+  updateUserStatus();
+  activateModule(state.module, false);
   await loadOperationalStore();
   await loadRemoteSheet();
+}
+
+function activateModule(module, shouldRender = true) {
+  state.module = module || 'inteligencia';
+  document.querySelectorAll('.nav-link').forEach((item) => item.classList.toggle('active', item.dataset.module === state.module));
+  Object.entries(els.modules).forEach(([name, element]) => {
+    element.classList.toggle('active', name === state.module);
+  });
+  if (shouldRender) render();
+}
+
+function applyAccessControl() {
+  const financeButton = document.querySelector('[data-module="financeiro"]');
+  if (!financeButton) return;
+  financeButton.classList.toggle('restricted', !canSeeFinancial());
+  financeButton.title = canSeeFinancial() ? 'Acessar Financeiro' : 'Acesso restrito a Admin e Financeiro';
+}
+
+function updateUserStatus() {
+  const actualProfile = normalize(state.currentUser?.perfil || state.profile || 'consultor');
+  const canSwitchProfile = actualProfile === 'admin';
+
+  if (!canSwitchProfile) {
+    state.profile = actualProfile || 'consultor';
+  }
+
+  els.profileSelect.value = state.profile;
+  els.profileSelect.disabled = !canSwitchProfile;
+  applyAccessControl();
+
+  if (state.currentUser?.nome) {
+    const viewLabel =
+      canSwitchProfile && actualProfile !== normalize(state.profile)
+        ? ` · visão ${roleLabel(state.profile)}`
+        : '';
+    els.userStatus.textContent = `${state.currentUser.nome} (${roleLabel(actualProfile)}${viewLabel})`;
+    return;
+  }
+
+  els.userStatus.textContent = `Perfil ${roleLabel(state.profile)}`;
+}
+
+async function authenticateUser(username, password) {
+  const users = await loadUsers();
+  const normalizedUser = normalize(username);
+  const user = users.find(
+    (item) =>
+      normalize(item.usuario) === normalizedUser &&
+      String(item.senha || '') === String(password || '') &&
+      normalize(item.ativo || 'SIM') !== 'nao',
+  );
+
+  if (!user) return false;
+
+  state.currentUser = {
+    usuario: user.usuario,
+    nome: user.nome || user.usuario,
+    perfil: normalize(user.perfil || 'consultor'),
+  };
+  state.profile = state.currentUser.perfil;
+  localStorage.setItem('unifecaf-erp-user', JSON.stringify(state.currentUser));
+  return true;
+}
+
+async function loadUsers() {
+  try {
+    const response = await fetch('/.netlify/functions/state?action=users', { cache: 'no-store' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    const users = Array.isArray(payload.users) ? payload.users : [];
+    state.users = users.length ? users : defaultUsers();
+  } catch {
+    state.users = defaultUsers();
+  }
+  return state.users;
 }
 
 async function loadOperationalStore() {
@@ -168,6 +266,7 @@ async function loadOperationalStore() {
     if (!payload.ok || !payload.state) throw new Error(payload.message || 'Estado remoto indisponivel');
 
     state.store = normalizeStore(payload.state);
+    state.users = Array.isArray(payload.users) ? payload.users : state.users;
     seedStore();
     persistLocal();
     state.remoteState = true;
@@ -229,8 +328,8 @@ function enrichRow(row, index) {
     name: cleanText(row[fields.name]) || 'Sem nome',
     ra: cleanText(row[fields.ra]) || key,
     cpf: cleanText(row[fields.cpf]),
-    phone: cleanText(row[fields.phone]),
-    email: cleanText(row[fields.email]),
+    phone: cleanText(override.contactPhone) || cleanText(row[fields.phone]),
+    email: cleanText(override.contactEmail) || cleanText(row[fields.email]),
     enrollmentDate: cleanText(row[fields.enrollmentDate]),
     course: cleanText(row[fields.course]) || 'Sem curso',
     startPeriod: cleanText(row[fields.startPeriod]) || cleanText(row[fields.currentPeriod]) || '-',
@@ -238,6 +337,7 @@ function enrichRow(row, index) {
     sourceStatus: cleanText(row[fields.status]) || 'SEM STATUS',
     localStatus,
     statusOverridden: Boolean(override.status),
+    contactOverridden: Boolean(override.contactPhone || override.contactEmail || override.followStatus),
     isDebt: normalize(row[fields.debt]) === 'sim',
     debtValue,
     entry: cleanText(row[fields.entry]),
@@ -271,6 +371,7 @@ function render() {
   state.filteredRows = applyFilters(state.allRows);
   renderAlerts();
   renderInteligencia();
+  renderBI();
   renderAcompanhamento();
   renderRetencao();
   renderFinanceiro();
@@ -316,7 +417,14 @@ function applyFilters(rows) {
 function renderAlerts() {
   const lateFollowups = state.filteredRows.filter((row) => row.risk.level === 'Alto').slice(0, 2);
   const noContact = state.filteredRows.filter((row) => !row.override.lastContact && row.risk.score >= 35).slice(0, 2);
+  const boletoPending = state.store.leads
+    .filter((lead) => lead.stage === 'Matriculado' && !lead.boletoSent)
+    .slice(0, 2);
   const alerts = [
+    ...boletoPending.map((lead) => ({
+      type: 'warning',
+      text: `Boleto pendente: ${lead.name} foi matriculado e precisa de envio do boleto de matrícula.`,
+    })),
     ...lateFollowups.map((row) => ({
       type: 'danger',
       text: `Prioridade: ${row.name} está com risco alto e status ${row.localStatus}.`,
@@ -347,9 +455,16 @@ function renderInteligencia() {
   const maintenance = Number(state.store.settings.computersMaintenance || 0);
   const availableComputers = Math.max(0, totalComputers - maintenance - currentExamReservations());
   const signals = decisionSignals({ rows, debtRows, debtTotal, retention, gap, availableComputers, queue });
+  const matriculatedLeads = state.store.leads.filter((lead) => lead.stage === 'Matriculado').length;
 
   els.modules.inteligencia.innerHTML = `
-    ${moduleTitle('Inteligência de gestão do polo', 'Painel executivo para decisões acadêmicas, financeiras, comerciais e de recursos.')}
+    ${moduleTitle('Painel de acesso rápido', 'Quatro frentes centrais para operar o polo com menos cliques.')}
+    <section class="quick-access-grid" aria-label="Módulos de acesso rápido">
+      ${quickAccessCard('Gestão Financeira', 'Carteira, mensalidades, boleto e matrícula', 'financeiro', canSeeFinancial() ? formatMoney(debtTotal) : 'Blindado', canSeeFinancial() ? 'Em atraso' : 'Acesso por perfil', 'green')}
+      ${quickAccessCard('Retenção de Alunos', 'Alertas AVA e registro de contato', 'retencao', totals.highRisk, 'Risco alto', 'yellow')}
+      ${quickAccessCard('Matrículas', 'CRM de leads com Kanban arrastável', 'cursos', matriculatedLeads, 'Matriculados no funil', 'cyan')}
+      ${quickAccessCard('Agendamentos', 'Aulas, provas e fila diária', 'agenda', state.store.schedule.length + state.store.exams.length, 'Reservas ativas', 'red')}
+    </section>
     <section class="metric-grid">
       ${metricCard('Retenção filtrada', `${retention}%`, `${activeRows.length.toLocaleString('pt-BR')} ativos`, retention >= 70 ? 'green' : 'yellow')}
       ${metricCard('Risco alto', totals.highRisk, 'Intervenção acadêmica', totals.highRisk ? 'yellow' : 'green')}
@@ -444,12 +559,129 @@ function renderInteligencia() {
   `;
 }
 
+function renderBI() {
+  const filter = getBiFilter();
+  const rows = filterRowsByPeriod(state.allRows, filter);
+  const censusRows = rows.length ? rows : state.allRows;
+  const census = academicCensus(censusRows);
+  const commercial = commercialKpis(filter);
+  const finance = financeKpis(filter);
+  const monthlyTarget = Number(state.store.settings.monthlyTarget || 65);
+  const annualTarget = Number(state.store.settings.annualTarget || monthlyTarget * 12);
+  const monthlyProgress = percent(commercial.monthlyMatriculations, monthlyTarget);
+  const annualProgress = percent(commercial.annualMatriculations, annualTarget);
+
+  els.modules.bi.innerHTML = `
+    ${moduleTitle('Business Intelligence', 'Central de indicadores para tomada de decisão do polo.')}
+    <section class="metric-grid">
+      ${metricCard('Meta mensal', `${monthlyProgress}%`, `${commercial.monthlyMatriculations}/${monthlyTarget} matrículas`, monthlyProgress >= 100 ? 'green' : 'yellow')}
+      ${metricCard('Meta anual', `${annualProgress}%`, `${commercial.annualMatriculations}/${annualTarget} matrículas`, annualProgress >= 100 ? 'green' : 'cyan')}
+      ${metricCard('Ativos no censo', census.active, `${censusRows.length.toLocaleString('pt-BR')} registros analisados`, 'green')}
+      ${metricCard('Inativos no censo', census.inactive, 'Trancado, abandonado e cancelado', census.inactive ? 'yellow' : 'green')}
+    </section>
+    <section class="split-grid">
+      <article class="panel">
+        <div class="panel-heading">
+          <div>${smallTitle('Funil comercial', 'Metas mensal e anual')}</div>
+          <span>${escapeHtml(periodLabel(filter))}</span>
+        </div>
+        <form class="inline-form bi-controls" data-form="bi-filter">
+          <select name="biMonth">${monthOptions(filter.month)}</select>
+          <select name="biYear">${yearOptions(filter.year)}</select>
+          <button type="submit">Filtrar</button>
+        </form>
+        <div class="progress-list">
+          ${progressLine('Meta mensal', monthlyProgress, `${commercial.monthlyMatriculations} matrículas no período`)}
+          ${progressLine('Meta anual', annualProgress, `${commercial.annualMatriculations} matrículas no ano`)}
+        </div>
+        <form class="inline-form bi-controls" data-form="bi-goals">
+          <input type="number" min="1" name="monthlyTarget" value="${monthlyTarget}" placeholder="Meta mensal" />
+          <input type="number" min="1" name="annualTarget" value="${annualTarget}" placeholder="Meta anual" />
+          <button type="submit">Atualizar metas</button>
+        </form>
+      </article>
+      <article class="panel">
+        <div class="panel-heading">
+          <div>${smallTitle('Censo acadêmico interno', 'Status da base por período')}</div>
+          <span>${censusRows.length.toLocaleString('pt-BR')} alunos</span>
+        </div>
+        <div class="status-chart">
+          ${census.statuses
+            .map(
+              (item) => `
+                <div class="status-chart-item ${item.className}">
+                  <span style="height:${item.height}%"></span>
+                  <strong>${item.count.toLocaleString('pt-BR')}</strong>
+                  <em>${escapeHtml(item.label)}</em>
+                </div>
+              `,
+            )
+            .join('')}
+        </div>
+      </article>
+    </section>
+    <section class="split-grid">
+      <article class="table-panel">
+        <div class="panel-heading">
+          <div>${smallTitle('Tabela do censo', 'Ativo, abandono, trancado e cancelado')}</div>
+          <span>${escapeHtml(periodLabel(filter))}</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Quantidade</th>
+                <th>Participação</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${census.statuses
+                .map(
+                  (item) => `
+                    <tr>
+                      <td><span class="badge ${item.className}">${escapeHtml(item.label)}</span></td>
+                      <td>${item.count.toLocaleString('pt-BR')}</td>
+                      <td>${percent(item.count, Math.max(censusRows.length, 1))}%</td>
+                    </tr>
+                  `,
+                )
+                .join('')}
+            </tbody>
+          </table>
+        </div>
+      </article>
+      <article class="table-panel">
+        <div class="panel-heading">
+          <div>${smallTitle('Saúde financeira', 'Taxa de matrícula e mensalidades recorrentes')}</div>
+          <span>${canSeeFinancial() ? 'Comparativo operacional' : 'Blindado pelo RBAC'}</span>
+        </div>
+        ${
+          canSeeFinancial()
+            ? `
+              <form class="inline-form bi-controls" data-form="bi-ticket">
+                <input type="number" min="0" step="0.01" name="monthlyTicket" value="${Number(state.store.settings.monthlyTicket || 299)}" placeholder="Ticket mensalidade" />
+                <button type="submit">Atualizar ticket</button>
+              </form>
+              <div class="finance-kpi-list">
+                ${financeKpiItem('Taxa de Matrícula', finance.enrollment.current, finance.enrollment.previousMonth, finance.enrollment.previousYear)}
+                ${financeKpiItem('Mensalidades Recorrentes', finance.recurring.current, finance.recurring.previousMonth, finance.recurring.previousYear)}
+                ${financeKpiItem('Acumulado do Ano', finance.ytd.current, finance.ytd.previousMonth, finance.ytd.previousYear)}
+              </div>
+            `
+            : '<div class="locked-panel"><strong>Acesso blindado pelo RBAC</strong><p>Fluxo de caixa disponível somente para Admin e Financeiro.</p></div>'
+        }
+      </article>
+    </section>
+  `;
+}
+
 function renderAcompanhamento() {
   const rows = state.filteredRows;
   const totals = getStudentTotals(rows);
   const cohorts = getCohortStats(rows).slice(0, 7);
   els.modules.acompanhamento.innerHTML = `
-    ${moduleTitle('Acompanhamento de alunos', 'Master Data com ciclo de vida acadêmico, financeiro e logístico em visão 360°.')}
+    ${moduleTitle('Cadastro e acompanhamento de alunos', 'Master Data com contato local soberano, status e visão 360°.')}
     <section class="metric-grid">
       ${metricCard('Base filtrada', rows.length, 'Registros na visão atual')}
       ${metricCard('Ativos', totals.active, 'Status operacional ativo', 'green')}
@@ -692,8 +924,19 @@ function renderFinanceiro() {
 function renderCursos() {
   const catalog = getCourseCatalog();
   const leads = state.store.leads;
+  const signed = leads.filter((lead) => lead.stage === 'Matriculado').length;
+  const boletoPending = leads.filter((lead) => lead.stage === 'Matriculado' && !lead.boletoSent).length;
+  const paymentOk = leads.filter(
+    (lead) => lead.stage === 'Matriculado' && ['Pago', 'Isento'].includes(lead.enrollmentPaymentStatus),
+  ).length;
   els.modules.cursos.innerHTML = `
-    ${moduleTitle('Catálogo de cursos e funil', 'Produtos validados para conversão de leads em matrículas.')}
+    ${moduleTitle('Matrículas e CRM de Leads', 'Funil visual com Kanban arrastável, contrato, boleto e status de pagamento.')}
+    <section class="metric-grid">
+      ${metricCard('Leads ativos', leads.length, 'Base comercial local')}
+      ${metricCard('Contratos assinados', signed, 'Status Matriculado', 'green')}
+      ${metricCard('Boletos pendentes', boletoPending, 'Alerta automático', boletoPending ? 'yellow' : 'green')}
+      ${metricCard('Matrículas baixadas', paymentOk, 'Pago ou isento', 'cyan')}
+    </section>
     <section class="split-grid">
       <article class="panel">
         <div class="panel-heading">
@@ -806,7 +1049,13 @@ function renderMetas() {
 function renderAgenda() {
   const events = state.store.schedule.slice().sort((a, b) => new Date(a.start) - new Date(b.start));
   els.modules.agenda.innerHTML = `
-    ${moduleTitle('Agenda única acadêmica', 'Planejamento de aulas com validação anti-conflito.')}
+    ${moduleTitle('Agendamentos de aulas e provas', 'Agenda única com validação anti-conflito e acesso rápido às reservas de prova.')}
+    <section class="quick-access-grid agenda-shortcuts">
+      ${quickAccessCard('Agendar Aula', 'Docente, sala, horário e lotação', 'agenda', events.length, 'Aulas ativas', 'cyan')}
+      ${quickAccessCard('Reservar Prova', 'Disciplinas, tempo e estações de TI', 'avaliacoes', state.store.exams.length, 'Provas ativas', 'yellow')}
+      ${quickAccessCard('Fila do Dia', 'Check-in, atendimento e finalização', 'fila', dailyQueue().length, 'Eventos hoje', 'green')}
+      ${quickAccessCard('Infraestrutura', 'Computadores disponíveis e manutenção', 'avaliacoes', currentExamReservations(), 'Estações reservadas', 'red')}
+    </section>
     <section class="split-grid">
       <article class="panel">
         <div class="panel-heading">
@@ -920,6 +1169,7 @@ function renderFila() {
 }
 
 function renderSeguranca() {
+  const configuredUsers = state.users.length ? state.users : defaultUsers();
   els.modules.seguranca.innerHTML = `
     ${moduleTitle('Governança de acessos e segurança', 'RBAC com segmentação de dados e trilha local.')}
     <section class="metric-grid">
@@ -950,6 +1200,26 @@ function renderSeguranca() {
         </div>
       </article>
     </section>
+    <section class="table-panel">
+      <div class="panel-heading">
+        <div>${smallTitle('Usuários do sistema', 'Cadastro mantido na aba ERP_Usuarios')}</div>
+        <span>${configuredUsers.length} usuários configurados</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Usuário</th>
+              <th>Nome</th>
+              <th>Perfil</th>
+              <th>Status</th>
+              <th>Onde alterar</th>
+            </tr>
+          </thead>
+          <tbody>${configuredUsers.map(userRowTemplate).join('')}</tbody>
+        </table>
+      </div>
+    </section>
   `;
 }
 
@@ -959,7 +1229,7 @@ function studentRowTemplate(row) {
       <td>
         <button class="text-button" type="button" data-open-student="${escapeHtml(row.key)}">
           ${escapeHtml(row.name)}
-          <span>${escapeHtml(shortUnit(row.unit))}</span>
+          <span>${escapeHtml(shortUnit(row.unit))}${row.contactOverridden ? ' · contato local' : ''}${row.override.followStatus ? ` · ${escapeHtml(row.override.followStatus)}` : ''}</span>
         </button>
       </td>
       <td>${escapeHtml(maskCpf(row.cpf))}</td>
@@ -1044,6 +1314,21 @@ function showDrawer(row) {
           ${STATUS_OPTIONS.map((status) => `<option ${normalize(status) === normalize(row.localStatus) ? 'selected' : ''}>${status}</option>`).join('')}
         </select>
       </label>
+      <div class="two-cols">
+        <label>Telefone/WhatsApp local
+          <input name="contactPhone" value="${escapeHtml(row.phone)}" placeholder="Telefone atualizado pelo polo" />
+        </label>
+        <label>E-mail local
+          <input name="contactEmail" type="email" value="${escapeHtml(row.email)}" placeholder="E-mail atualizado pelo polo" />
+        </label>
+      </div>
+      <label>Status de acompanhamento
+        <select name="followStatus">
+          ${['Sem acompanhamento', 'Contato pendente', 'Em acompanhamento', 'Resolvido', 'Não localizado']
+            .map((status) => `<option ${status === (override.followStatus || 'Sem acompanhamento') ? 'selected' : ''}>${status}</option>`)
+            .join('')}
+        </select>
+      </label>
       <label>Registro de contato
         <input name="contact" placeholder="Ex: Ligação, WhatsApp, presencial" />
       </label>
@@ -1088,6 +1373,7 @@ function showDrawer(row) {
       ${canSeeFinancial() ? detailRow('Matrícula polo', `${override.enrollmentExempt ? 'Isento' : override.enrollmentPaid ? 'Pago' : 'Pendente'} · boleto ${override.boletoSent ? 'enviado' : 'não enviado'}`) : ''}
       ${detailRow('Telefone', row.phone)}
       ${detailRow('E-mail', row.email)}
+      ${detailRow('Status acompanhamento', override.followStatus || 'Sem acompanhamento')}
       ${detailRow('Endereço', row.address)}
     </div>
   `;
@@ -1159,12 +1445,19 @@ function handleSubmit(event) {
   event.preventDefault();
   const data = Object.fromEntries(new FormData(form).entries());
   const formType = form.dataset.form;
+  const resetAfterSubmit = !['student-override', 'retention-contact', 'bi-filter', 'bi-goals', 'bi-ticket'].includes(formType);
 
   if (formType === 'student-override') saveStudentOverride(form.dataset.studentKey, data);
   if (formType === 'retention-contact') saveRetentionContact(form.dataset.studentKey, data);
   if (formType === 'course') addCourse(data);
   if (formType === 'lead') addLead(data);
   if (formType === 'goal') updateSettings({ monthlyTarget: Number(data.monthlyTarget || 0) });
+  if (formType === 'bi-filter') updateSettings({ biMonth: Number(data.biMonth || 0), biYear: Number(data.biYear || new Date().getFullYear()) });
+  if (formType === 'bi-goals') updateSettings({
+    monthlyTarget: Number(data.monthlyTarget || 0),
+    annualTarget: Number(data.annualTarget || 0),
+  });
+  if (formType === 'bi-ticket') updateSettings({ monthlyTicket: Number(data.monthlyTicket || 0) });
   if (formType === 'decision') addDecision(data);
   if (formType === 'schedule') addSchedule(data);
   if (formType === 'inventory') updateSettings({
@@ -1173,13 +1466,23 @@ function handleSubmit(event) {
   });
   if (formType === 'exam') addExam(data);
 
-  form.reset();
+  if (resetAfterSubmit) form.reset();
   persist();
   rerichRows();
   render();
 }
 
 function handleClick(event) {
+  const quickModule = event.target.closest('[data-quick-module]');
+  if (quickModule) {
+    if (quickModule.dataset.quickModule === 'financeiro' && !canSeeFinancial()) {
+      toast('Financeiro restrito a Admin e Financeiro.');
+      return;
+    }
+    activateModule(quickModule.dataset.quickModule);
+    return;
+  }
+
   const openButton = event.target.closest('[data-open-student]');
   if (openButton) {
     const row = state.allRows.find((item) => item.key === openButton.dataset.openStudent);
@@ -1204,7 +1507,7 @@ function handleClick(event) {
 
   const convertLead = event.target.closest('[data-convert-lead]');
   if (convertLead) {
-    convertLeadToStudent(convertLead.dataset.convertLead);
+    updateLeadStage(convertLead.dataset.convertLead, 'Matriculado');
     return;
   }
 
@@ -1223,8 +1526,73 @@ function handleChange(event) {
 
   const paidCheck = event.target.closest('[data-enrollment-paid]');
   if (paidCheck) {
+    if (!canSeeFinancial()) {
+      paidCheck.checked = !paidCheck.checked;
+      toast('Baixa de pagamento restrita a Admin e Financeiro.');
+      return;
+    }
     saveStudentOverride(paidCheck.dataset.enrollmentPaid, { enrollmentPaid: paidCheck.checked ? 'true' : 'false' });
+    return;
   }
+
+  const boletoCheck = event.target.closest('[data-lead-boleto]');
+  if (boletoCheck) {
+    if (!canSeeFinancial()) {
+      boletoCheck.checked = !boletoCheck.checked;
+      toast('Controle de boleto restrito a Admin e Financeiro.');
+      return;
+    }
+    updateLeadFinance(boletoCheck.dataset.leadBoleto, { boletoSent: boletoCheck.checked });
+    return;
+  }
+
+  const leadPayment = event.target.closest('[data-lead-payment]');
+  if (leadPayment) {
+    if (!canSeeFinancial()) {
+      toast('Baixa de pagamento restrita a Admin e Financeiro.');
+      render();
+      return;
+    }
+    updateLeadFinance(leadPayment.dataset.leadPayment, { enrollmentPaymentStatus: leadPayment.value });
+  }
+}
+
+function handleDragStart(event) {
+  const card = event.target.closest('[data-lead-id]');
+  if (!card) return;
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', card.dataset.leadId);
+  card.classList.add('dragging');
+}
+
+function handleDragOver(event) {
+  const column = event.target.closest('[data-lead-stage]');
+  if (!column) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+  column.classList.add('drag-over');
+}
+
+function handleDragLeave(event) {
+  const column = event.target.closest('[data-lead-stage]');
+  if (column && !column.contains(event.relatedTarget)) {
+    column.classList.remove('drag-over');
+  }
+}
+
+function handleDrop(event) {
+  const column = event.target.closest('[data-lead-stage]');
+  if (!column) return;
+  event.preventDefault();
+  document.querySelectorAll('.kanban-column.drag-over').forEach((item) => item.classList.remove('drag-over'));
+  document.querySelectorAll('.lead-card.dragging').forEach((item) => item.classList.remove('dragging'));
+  const leadId = event.dataTransfer.getData('text/plain');
+  if (leadId) updateLeadStage(leadId, column.dataset.leadStage);
+}
+
+function clearLeadDragState() {
+  document.querySelectorAll('.kanban-column.drag-over').forEach((item) => item.classList.remove('drag-over'));
+  document.querySelectorAll('.lead-card.dragging').forEach((item) => item.classList.remove('dragging'));
 }
 
 function saveStudentOverride(key, data) {
@@ -1232,6 +1600,9 @@ function saveStudentOverride(key, data) {
   state.store.overrides[key] = {
     ...existing,
     status: data.status || existing.status,
+    contactPhone: data.contactPhone ?? existing.contactPhone,
+    contactEmail: data.contactEmail ?? existing.contactEmail,
+    followStatus: data.followStatus ?? existing.followStatus,
     note: data.note ?? existing.note,
     lastContact: data.contact ? `${new Date().toLocaleString('pt-BR')} · ${data.contact}` : existing.lastContact,
     enrollmentPaid:
@@ -1288,7 +1659,7 @@ function addCourse(data) {
 }
 
 function addLead(data) {
-  state.store.leads.push({
+  const lead = normalizeLead({
     id: cryptoId(),
     name: cleanText(data.name),
     phone: cleanText(data.phone),
@@ -1298,14 +1669,54 @@ function addLead(data) {
     consultant: roleLabel(state.profile),
     createdAt: new Date().toISOString(),
   });
-  toast('Lead salvo no funil.');
+  if (lead.stage === 'Matriculado') {
+    ensureLocalStudentForLead(lead);
+    lead.matriculatedAt = new Date().toISOString();
+  }
+  state.store.leads.push(lead);
+  toast(lead.stage === 'Matriculado' ? matriculationAlertMessage(lead) : 'Lead salvo no funil.');
 }
 
 function convertLeadToStudent(id) {
+  updateLeadStage(id, 'Matriculado');
+}
+
+function updateLeadStage(id, stage) {
   const lead = state.store.leads.find((item) => item.id === id);
   if (!lead) return;
-  lead.stage = 'Matriculado';
-  state.store.localStudents.push({
+  const oldStage = lead.stage;
+  lead.stage = stage;
+  lead.updatedAt = new Date().toISOString();
+  if (stage === 'Matriculado') {
+    if (oldStage !== 'Matriculado') lead.matriculatedAt = new Date().toISOString();
+    ensureLocalStudentForLead(lead);
+    toast(matriculationAlertMessage(lead));
+  } else {
+    toast(`Lead movido para ${stage}.`);
+  }
+  persist();
+  render();
+}
+
+function updateLeadFinance(id, changes) {
+  const lead = state.store.leads.find((item) => item.id === id);
+  if (!lead) return;
+  if (changes.boletoSent !== undefined) {
+    lead.boletoSent = Boolean(changes.boletoSent);
+    lead.boletoSentAt = lead.boletoSent ? lead.boletoSentAt || new Date().toISOString() : '';
+  }
+  if (changes.enrollmentPaymentStatus !== undefined) {
+    lead.enrollmentPaymentStatus = changes.enrollmentPaymentStatus || 'Pendente';
+  }
+  lead.updatedAt = new Date().toISOString();
+  persist();
+  toast('Status da matrícula atualizado no CRM.');
+  render();
+}
+
+function ensureLocalStudentForLead(lead) {
+  if (lead.localStudentId && state.store.localStudents.some((student) => student.id === lead.localStudentId)) return;
+  const localStudent = {
     id: cryptoId(),
     name: lead.name,
     phone: lead.phone,
@@ -1313,10 +1724,15 @@ function convertLeadToStudent(id) {
     startPeriod: currentCohortCode(),
     status: 'PREMAT',
     createdAt: new Date().toISOString(),
-  });
-  persist();
-  toast('Lead convertido: registro acadêmico local e pendência de matrícula criados.');
-  render();
+  };
+  state.store.localStudents.push(localStudent);
+  lead.localStudentId = localStudent.id;
+}
+
+function matriculationAlertMessage(lead) {
+  return lead.boletoSent
+    ? 'Lead matriculado: contrato assinado e boleto já marcado como enviado.'
+    : `Lead matriculado: confira o envio do boleto de matrícula para ${lead.name}.`;
 }
 
 function addDecision(data) {
@@ -1486,10 +1902,199 @@ function canSeeFinancial() {
   return state.profile === 'admin' || state.profile === 'financeiro';
 }
 
+function getBiFilter() {
+  const today = new Date();
+  return {
+    month: Number(state.store.settings.biMonth || today.getMonth() + 1),
+    year: Number(state.store.settings.biYear || today.getFullYear()),
+  };
+}
+
+function monthOptions(selected) {
+  return [
+    '<option value="0">Ano inteiro</option>',
+    ...MONTHS.map((month, index) => `<option value="${index + 1}" ${Number(selected) === index + 1 ? 'selected' : ''}>${month}</option>`),
+  ].join('');
+}
+
+function yearOptions(selected) {
+  const current = new Date().getFullYear();
+  return Array.from({ length: 6 }, (_, index) => current - 3 + index)
+    .map((year) => `<option value="${year}" ${Number(selected) === year ? 'selected' : ''}>${year}</option>`)
+    .join('');
+}
+
+function periodLabel(filter) {
+  return filter.month ? `${MONTHS[filter.month - 1]}/${String(filter.year).slice(-2)}` : `Ano ${filter.year}`;
+}
+
+function filterRowsByPeriod(rows, filter) {
+  return rows.filter((row) => {
+    const date = rowPeriodDate(row);
+    if (!date) return filter.month === 0;
+    return matchesPeriod(date, filter);
+  });
+}
+
+function rowPeriodDate(row) {
+  return parseBrazilianDate(row.enrollmentDate) || cohortDate(row.startPeriod);
+}
+
+function cohortDate(value) {
+  const cohort = parseCohort(value);
+  if (!cohort.year) return null;
+  const month = cohort.term === 2 ? 6 : 0;
+  return new Date(cohort.year, month, 1);
+}
+
+function matchesPeriod(date, filter) {
+  if (!date || Number.isNaN(date.getTime())) return false;
+  if (date.getFullYear() !== Number(filter.year)) return false;
+  return !Number(filter.month) || date.getMonth() + 1 === Number(filter.month);
+}
+
+function previousMonthFilter(filter) {
+  const month = Number(filter.month || new Date().getMonth() + 1);
+  const year = Number(filter.year);
+  return month === 1 ? { month: 12, year: year - 1 } : { month: month - 1, year };
+}
+
+function previousYearFilter(filter) {
+  return { month: Number(filter.month || 0), year: Number(filter.year) - 1 };
+}
+
+function academicCensus(rows) {
+  const definitions = [
+    { key: 'Ativo', label: 'Ativo', className: 'green' },
+    { key: 'Abandonado', label: 'Abandonado', className: 'yellow' },
+    { key: 'Trancado', label: 'Trancado', className: 'cyan' },
+    { key: 'Cancelado', label: 'Cancelado', className: 'red' },
+  ];
+  const counts = definitions.map((definition) => ({
+    ...definition,
+    count: rows.filter((row) => academicStatus(row) === definition.key).length,
+  }));
+  const max = Math.max(...counts.map((item) => item.count), 1);
+  return {
+    active: counts.find((item) => item.key === 'Ativo')?.count || 0,
+    inactive: counts.filter((item) => item.key !== 'Ativo').reduce((total, item) => total + item.count, 0),
+    statuses: counts.map((item) => ({ ...item, height: Math.max(8, Math.round((item.count / max) * 100)) })),
+  };
+}
+
+function academicStatus(row) {
+  const status = normalize(row.localStatus);
+  if (status.includes('tranca')) return 'Trancado';
+  if (status.includes('aband') || status.includes('desist')) return 'Abandonado';
+  if (status.includes('cancel')) return 'Cancelado';
+  return isActive(row) ? 'Ativo' : 'Cancelado';
+}
+
+function commercialKpis(filter) {
+  const monthlyFilter = { month: Number(filter.month || new Date().getMonth() + 1), year: Number(filter.year) };
+  return {
+    monthlyMatriculations: matriculationsInPeriod(monthlyFilter),
+    annualMatriculations: matriculationsInPeriod({ month: 0, year: filter.year }),
+  };
+}
+
+function matriculationsInPeriod(filter) {
+  const leadCount = state.store.leads.filter((lead) => {
+    if (lead.stage !== 'Matriculado') return false;
+    const date = parseBrazilianDate(lead.matriculatedAt || lead.updatedAt || lead.createdAt);
+    return matchesPeriod(date, filter);
+  }).length;
+  const localStudentCount = state.store.localStudents.filter((student) => {
+    const date = parseBrazilianDate(student.createdAt);
+    return matchesPeriod(date, filter);
+  }).length;
+  return leadCount + localStudentCount;
+}
+
+function financeKpis(filter) {
+  const previousMonth = previousMonthFilter(filter);
+  const previousYear = previousYearFilter(filter);
+  return {
+    enrollment: {
+      current: enrollmentRevenue(filter),
+      previousMonth: enrollmentRevenue(previousMonth),
+      previousYear: enrollmentRevenue(previousYear),
+    },
+    recurring: {
+      current: recurringRevenue(filter),
+      previousMonth: recurringRevenue(previousMonth),
+      previousYear: recurringRevenue(previousYear),
+    },
+    ytd: {
+      current: enrollmentRevenue({ month: 0, year: filter.year }) + recurringRevenue({ month: 0, year: filter.year }),
+      previousMonth: enrollmentRevenue(previousMonth) + recurringRevenue(previousMonth),
+      previousYear: enrollmentRevenue({ month: 0, year: filter.year - 1 }) + recurringRevenue({ month: 0, year: filter.year - 1 }),
+    },
+  };
+}
+
+function enrollmentRevenue(filter) {
+  const fee = Number(state.store.settings.enrollmentFee || 99);
+  const overrideRevenue = Object.values(state.store.overrides).reduce((total, item) => {
+    if (!item.enrollmentPaid) return total;
+    const date = parseBrazilianDate(item.updatedAt || item.boletoSentAt);
+    if (!matchesPeriod(date, filter)) return total;
+    return total + Number(item.enrollmentFee || fee);
+  }, 0);
+  const leadRevenue = state.store.leads.reduce((total, lead) => {
+    if (lead.stage !== 'Matriculado' || lead.enrollmentPaymentStatus !== 'Pago') return total;
+    const date = parseBrazilianDate(lead.updatedAt || lead.matriculatedAt || lead.createdAt);
+    if (!matchesPeriod(date, filter)) return total;
+    return total + fee;
+  }, 0);
+  return overrideRevenue + leadRevenue;
+}
+
+function recurringRevenue(filter) {
+  const ticket = Number(state.store.settings.monthlyTicket || 299);
+  return filterRowsByPeriod(state.allRows, filter).filter((row) => isActive(row) && !row.isDebt).length * ticket;
+}
+
+function percent(value, target) {
+  return Math.min(999, Math.round((Number(value || 0) / Math.max(Number(target || 0), 1)) * 100));
+}
+
+function progressLine(label, progress, detail) {
+  return `
+    <div class="progress-line">
+      <div>
+        <strong>${escapeHtml(label)}</strong>
+        <span>${escapeHtml(detail)}</span>
+      </div>
+      <em>${progress}%</em>
+      <div class="bar-track"><span style="width:${Math.min(progress, 100)}%"></span></div>
+    </div>
+  `;
+}
+
+function financeKpiItem(label, current, previousMonth, previousYear) {
+  return `
+    <div class="finance-kpi-item">
+      <div>
+        <strong>${escapeHtml(label)}</strong>
+        <span>Atual: ${formatMoney(current)}</span>
+      </div>
+      <span class="badge ${current >= previousMonth ? 'green' : 'yellow'}">Mês anterior: ${signedPercentChange(current, previousMonth)}</span>
+      <span class="badge ${current >= previousYear ? 'green' : 'red'}">Ano anterior: ${signedPercentChange(current, previousYear)}</span>
+    </div>
+  `;
+}
+
+function signedPercentChange(current, previous) {
+  if (!previous) return current ? '+100%' : '0%';
+  const change = Math.round(((current - previous) / Math.abs(previous)) * 100);
+  return `${change >= 0 ? '+' : ''}${change}%`;
+}
+
 function getStudentTotals(rows) {
   return {
     active: rows.filter(isActive).length,
-    overrides: rows.filter((row) => row.statusOverridden).length,
+    overrides: rows.filter((row) => row.statusOverridden || row.contactOverridden).length,
     highRisk: rows.filter((row) => row.risk.level === 'Alto').length,
   };
 }
@@ -1524,22 +2129,54 @@ function getCourseCatalog() {
 function leadColumn(stage) {
   const leads = state.store.leads.filter((lead) => lead.stage === stage);
   return `
-    <div class="kanban-column">
+    <div class="kanban-column" data-lead-stage="${escapeHtml(stage)}">
       <div class="kanban-head"><strong>${escapeHtml(stage)}</strong><span>${leads.length}</span></div>
       ${leads
         .map(
           (lead) => `
-            <div class="lead-card">
+            <div class="lead-card ${lead.stage === 'Matriculado' && !lead.boletoSent ? 'needs-boleto' : ''}" draggable="true" data-lead-id="${escapeHtml(lead.id)}">
               <strong>${escapeHtml(lead.name)}</strong>
               <span>${escapeHtml(lead.course)}</span>
-              <small>${escapeHtml(lead.origin)}</small>
-              ${stage !== 'Matriculado' ? `<button type="button" data-convert-lead="${escapeHtml(lead.id)}">Matricular</button>` : ''}
+              <small>${escapeHtml(lead.origin)} · ${escapeHtml(lead.consultant || 'Consultor')}</small>
+              ${
+                stage === 'Matriculado'
+                  ? canSeeFinancial()
+                    ? `
+                    <div class="lead-finance-box">
+                      <label class="check-line">
+                        <input type="checkbox" data-lead-boleto="${escapeHtml(lead.id)}" ${lead.boletoSent ? 'checked' : ''} />
+                        Boleto enviado
+                      </label>
+                      <label class="lead-payment-field">
+                        Pagamento da matrícula
+                        <select data-lead-payment="${escapeHtml(lead.id)}">
+                          ${paymentOptions(lead.enrollmentPaymentStatus)}
+                        </select>
+                      </label>
+                      <small>${lead.boletoSentAt ? `Enviado em ${escapeHtml(new Date(lead.boletoSentAt).toLocaleString('pt-BR'))}` : 'Alerta ativo até o envio do boleto.'}</small>
+                    </div>
+                  `
+                    : `
+                    <div class="lead-finance-box">
+                      <span class="badge ${lead.boletoSent ? 'green' : 'yellow'}">Boleto ${lead.boletoSent ? 'enviado' : 'pendente'}</span>
+                      <span class="badge">Pagamento ${escapeHtml(lead.enrollmentPaymentStatus)}</span>
+                      <small>Baixa financeira restrita a Admin e Financeiro.</small>
+                    </div>
+                  `
+                  : `<button type="button" data-convert-lead="${escapeHtml(lead.id)}">Matricular</button>`
+              }
             </div>
           `,
         )
         .join('')}
     </div>
   `;
+}
+
+function paymentOptions(selected = 'Pendente') {
+  return ['Pendente', 'Pago', 'Isento']
+    .map((status) => `<option ${status === selected ? 'selected' : ''}>${status}</option>`)
+    .join('');
 }
 
 function scheduleTemplate(item) {
@@ -1780,6 +2417,17 @@ function metricCard(label, value, subtitle, tone = '') {
   `;
 }
 
+function quickAccessCard(title, subtitle, module, value, label, tone) {
+  return `
+    <button class="quick-access-card tone-${tone}" type="button" data-quick-module="${escapeHtml(module)}">
+      <span>${escapeHtml(title)}</span>
+      <strong>${typeof value === 'number' ? value.toLocaleString('pt-BR') : escapeHtml(value)}</strong>
+      <small>${escapeHtml(label)}</small>
+      <em>${escapeHtml(subtitle)}</em>
+    </button>
+  `;
+}
+
 function smallTitle(eyebrow, title) {
   return `<p class="eyebrow">${escapeHtml(eyebrow)}</p><h2>${escapeHtml(title)}</h2>`;
 }
@@ -1790,6 +2438,19 @@ function detailRow(label, value) {
 
 function roleCard(title, description, active) {
   return `<div class="role-card ${active ? 'active' : ''}"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(description)}</span></div>`;
+}
+
+function userRowTemplate(user) {
+  const active = normalize(user.ativo || 'SIM') !== 'nao';
+  return `
+    <tr>
+      <td><strong>${escapeHtml(user.usuario || '-')}</strong></td>
+      <td>${escapeHtml(user.nome || '-')}</td>
+      <td><span class="badge cyan">${escapeHtml(roleLabel(normalize(user.perfil || 'consultor')))}</span></td>
+      <td><span class="badge ${active ? 'green' : 'red'}">${active ? 'Ativo' : 'Inativo'}</span></td>
+      <td>Aba ERP_Usuarios</td>
+    </tr>
+  `;
 }
 
 function auditItems() {
@@ -1920,6 +2581,8 @@ function seedStore() {
   state.store = normalizeStore(state.store);
   if (!state.store.settings.enrollmentFee) state.store.settings.enrollmentFee = 99;
   if (!state.store.settings.monthlyTarget) state.store.settings.monthlyTarget = 65;
+  if (!state.store.settings.annualTarget) state.store.settings.annualTarget = Number(state.store.settings.monthlyTarget || 65) * 12;
+  if (!state.store.settings.monthlyTicket) state.store.settings.monthlyTicket = 299;
   if (!state.store.settings.computersTotal) state.store.settings.computersTotal = 24;
   if (state.store.settings.computersMaintenance === undefined) state.store.settings.computersMaintenance = 2;
 
@@ -1992,13 +2655,37 @@ function normalizeStore(input = {}) {
     overrides: input.overrides || {},
     retention: input.retention || {},
     courses: Array.isArray(input.courses) ? input.courses : [],
-    leads: Array.isArray(input.leads) ? input.leads : [],
+    leads: Array.isArray(input.leads) ? input.leads.map(normalizeLead) : [],
     localStudents: Array.isArray(input.localStudents) ? input.localStudents : [],
     schedule: Array.isArray(input.schedule) ? input.schedule : [],
     exams: Array.isArray(input.exams) ? input.exams : [],
     archive: Array.isArray(input.archive) ? input.archive : [],
     decisions: Array.isArray(input.decisions) ? input.decisions : [],
     settings: input.settings || {},
+  };
+}
+
+function normalizeLead(lead = {}) {
+  const stage = LEAD_STAGES.includes(lead.stage) ? lead.stage : 'Lead';
+  const paymentStatus = ['Pendente', 'Pago', 'Isento'].includes(lead.enrollmentPaymentStatus)
+    ? lead.enrollmentPaymentStatus
+    : 'Pendente';
+  return {
+    ...lead,
+    id: lead.id || cryptoId(),
+    name: cleanText(lead.name),
+    phone: cleanText(lead.phone),
+    course: cleanText(lead.course),
+    origin: cleanText(lead.origin) || 'Não informado',
+    stage,
+    consultant: cleanText(lead.consultant) || 'Consultor',
+    boletoSent: lead.boletoSent === true || String(lead.boletoSent).toLowerCase() === 'true',
+    boletoSentAt: cleanText(lead.boletoSentAt),
+    enrollmentPaymentStatus: paymentStatus,
+    matriculatedAt: cleanText(lead.matriculatedAt),
+    localStudentId: cleanText(lead.localStudentId),
+    createdAt: cleanText(lead.createdAt) || new Date().toISOString(),
+    updatedAt: cleanText(lead.updatedAt),
   };
 }
 
@@ -2015,6 +2702,33 @@ function defaultStore() {
     decisions: [],
     settings: {},
   };
+}
+
+function defaultUsers() {
+  return [
+    { usuario: 'admin', senha: 'admin', nome: 'Administrador', perfil: 'admin', ativo: 'SIM' },
+    {
+      usuario: 'financeiro',
+      senha: '123456',
+      nome: 'Responsável Financeiro',
+      perfil: 'financeiro',
+      ativo: 'SIM',
+    },
+    {
+      usuario: 'retencao',
+      senha: '123456',
+      nome: 'Responsável Retenção',
+      perfil: 'consultor',
+      ativo: 'SIM',
+    },
+    {
+      usuario: 'consultor',
+      senha: '123456',
+      nome: 'Consultor Comercial',
+      perfil: 'consultor',
+      ativo: 'SIM',
+    },
+  ];
 }
 
 function setSourceStatus(text) {

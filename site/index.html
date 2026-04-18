@@ -38,22 +38,23 @@
           <span class="brand-mark">UF</span>
           <div>
             <strong>ERP UniFECAF Polo</strong>
-            <span id="sourceStatus">Carregando planilha</span>
+            <span><span id="userStatus">Acesso local</span> · <span id="sourceStatus">Carregando planilha</span></span>
           </div>
         </div>
 
         <nav class="top-nav" aria-label="Módulos">
-          <button class="nav-link" type="button" data-module="inteligencia">
-            Inteligência
+          <button class="nav-link active" type="button" data-module="inteligencia">
+            Painel
           </button>
-          <button class="nav-link active" type="button" data-module="acompanhamento">
-            Acompanhamento
+          <button class="nav-link" type="button" data-module="bi">BI</button>
+          <button class="nav-link" type="button" data-module="acompanhamento">
+            Cadastro
           </button>
           <button class="nav-link" type="button" data-module="retencao">Retenção AVA</button>
           <button class="nav-link" type="button" data-module="financeiro">Financeiro</button>
-          <button class="nav-link" type="button" data-module="cursos">Cursos</button>
+          <button class="nav-link" type="button" data-module="cursos">Matrículas</button>
           <button class="nav-link" type="button" data-module="metas">Metas</button>
-          <button class="nav-link" type="button" data-module="agenda">Agenda</button>
+          <button class="nav-link" type="button" data-module="agenda">Agendamentos</button>
           <button class="nav-link" type="button" data-module="avaliacoes">Avaliações</button>
           <button class="nav-link" type="button" data-module="fila">Fila diária</button>
           <button class="nav-link" type="button" data-module="seguranca">Segurança</button>
@@ -147,8 +148,9 @@
         </aside>
 
         <section class="module-host">
-          <section id="module-inteligencia" class="module"></section>
-          <section id="module-acompanhamento" class="module active"></section>
+          <section id="module-inteligencia" class="module active"></section>
+          <section id="module-bi" class="module"></section>
+          <section id="module-acompanhamento" class="module"></section>
           <section id="module-retencao" class="module"></section>
           <section id="module-financeiro" class="module"></section>
           <section id="module-cursos" class="module"></section>
