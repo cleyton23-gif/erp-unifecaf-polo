@@ -140,13 +140,7 @@ function bindEvents() {
     showApp();
   });
 
-  els.logoutButton.addEventListener('click', () => {
-    localStorage.removeItem('unifecaf-erp-session');
-    localStorage.removeItem('unifecaf-erp-user');
-    state.currentUser = null;
-    els.appView.hidden = true;
-    els.loginView.hidden = false;
-  });
+  els.logoutButton.addEventListener('click', () => endSession());
 
   els.megaMenuButton?.addEventListener('click', openMegaMenu);
   els.megaMenuClose?.addEventListener('click', closeMegaMenu);
@@ -216,6 +210,11 @@ function bindEvents() {
 async function showApp() {
   els.loginView.hidden = true;
   els.appView.hidden = false;
+  const sessionValid = await validateCurrentSession();
+  if (!sessionValid) {
+    endSession('Usuário removido ou desativado. Faça login com uma conta ativa.');
+    return;
+  }
   updateUserStatus();
   activateModule(state.module, false);
   setLoading(true, 'Carregando dados do polo...');
@@ -225,6 +224,32 @@ async function showApp() {
   } finally {
     setLoading(false);
   }
+}
+
+async function validateCurrentSession() {
+  if (!state.currentUser?.usuario) return true;
+  const users = await loadUsers();
+  const activeUser = users.find(
+    (user) => normalize(user.usuario) === normalize(state.currentUser.usuario) && normalize(user.ativo || 'SIM') !== 'nao',
+  );
+  if (!activeUser) return false;
+  state.currentUser = {
+    usuario: activeUser.usuario,
+    nome: activeUser.nome || activeUser.usuario,
+    perfil: normalizeProfile(activeUser.perfil || 'consultor'),
+  };
+  state.profile = state.currentUser.perfil;
+  localStorage.setItem('unifecaf-erp-user', JSON.stringify(state.currentUser));
+  return true;
+}
+
+function endSession(message = '') {
+  localStorage.removeItem('unifecaf-erp-session');
+  localStorage.removeItem('unifecaf-erp-user');
+  state.currentUser = null;
+  els.appView.hidden = true;
+  els.loginView.hidden = false;
+  if (message) toast(message);
 }
 
 function activateModule(module, shouldRender = true) {
@@ -331,12 +356,6 @@ async function authenticateUser(username, password) {
       normalize(item.ativo || 'SIM') !== 'nao',
   );
 
-  if (!user && normalizedUser === 'admin' && String(password || '') === 'admin') {
-    user = defaultUsers()[0];
-    state.users = mergeUsersByLogin([...users, user]);
-    persistUsersLocal();
-  }
-
   if (!user) return false;
 
   user.lastAccess = new Date().toISOString();
@@ -369,7 +388,7 @@ async function loadUsers() {
 function loadLocalUsers() {
   try {
     const users = JSON.parse(localStorage.getItem(USERS_STORAGE_KEY) || '[]');
-    return Array.isArray(users) && users.length ? mergeUsersByLogin([...defaultUsers(), ...users.map(normalizeUser)]) : defaultUsers();
+    return Array.isArray(users) && users.length ? mergeUsersByLogin(users.map(normalizeUser)) : defaultUsers();
   } catch {
     return defaultUsers();
   }
@@ -380,7 +399,6 @@ function mergeUsersByLogin(users = []) {
   users.map(normalizeUser).forEach((user) => {
     if (user.usuario) map.set(normalize(user.usuario), user);
   });
-  if (!map.has('admin')) map.set('admin', defaultUsers()[0]);
   return [...map.values()];
 }
 
