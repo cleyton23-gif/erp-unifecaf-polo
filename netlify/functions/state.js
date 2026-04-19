@@ -24,8 +24,9 @@ exports.handler = async (event) => {
 
   try {
     if (event.httpMethod === 'GET') {
+      const action = event.queryStringParameters?.action || 'read';
       const readUrl = new URL(WEBAPP_URL);
-      readUrl.searchParams.set('action', 'read');
+      readUrl.searchParams.set('action', action);
       if (STATE_TOKEN) readUrl.searchParams.set('token', STATE_TOKEN);
 
       const remoteResponse = await fetch(readUrl, {

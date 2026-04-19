@@ -21,18 +21,36 @@ Login local de demonstração:
 - Usuário: `admin`
 - Senha: `admin`
 
+Depois que o Apps Script estiver ativo, o login passa a validar a aba `ERP_Usuarios`.
+
+Usuários iniciais:
+
+| usuario | senha | perfil |
+|---|---|---|
+| admin | admin | admin |
+| financeiro | 123456 | financeiro |
+| retencao | 123456 | consultor |
+| consultor | 123456 | consultor |
+
 ## Estrutura implementada
 
-- Login visual no padrão do vídeo de referência.
-- Cabeçalho azul com módulos: Inteligência, Acompanhamento, Retenção AVA, Financeiro, Cursos, Metas, Agenda, Avaliações, Fila diária e Segurança.
+- Login e layout principal inspirados nas telas de referência: card central, sidebar fixa, cards brancos e Kanban limpo.
+- Painel inicial com quatro botões de acesso rápido: Gestão Financeira, Retenção de Alunos, Matrículas e Agendamentos.
+- Cabeçalho azul com módulos: Painel, BI, Cadastro, Retenção AVA, Financeiro, Matrículas, Metas, Agendamentos, Avaliações, Fila diária e Segurança.
+- Business Intelligence:
+  - Metas mensal e anual com barra de progresso.
+  - Censo acadêmico por mês/ano, status e gráfico.
+  - Saúde financeira por Taxa de Matrícula e Mensalidades Recorrentes, com comparação mensal e anual.
 - Janela de Retenção AVA para responsáveis acompanharem acesso e contato.
 - Módulo de Inteligência para tomada de decisão de gestão do polo.
 - Alertas operacionais de prioridade e falta de contato.
 - Persistência operacional em Google Sheets via Apps Script, com fallback local quando a URL ainda não estiver configurada.
+- Usuários operacionais na aba `ERP_Usuarios`.
 - Acompanhamento de Alunos como Master Data:
   - Nome, CPF mascarado, RA, Curso e Período de Início.
   - Alteração de status diretamente na linha.
-  - Override local soberano salvo no navegador e preservado contra sincronizações.
+  - Override local soberano de status, telefone/WhatsApp, e-mail e status de acompanhamento.
+  - Dados locais do polo têm prioridade de exibição sobre a base da sede.
   - Drawer 360° com contato, anotação e baixa de matrícula.
   - Controle de boleto enviado, pagamento de matrícula e isenção.
   - Análise de safra por codificação alfanumérica.
@@ -45,6 +63,9 @@ Login local de demonstração:
   - Admin: visão integral.
   - Financeiro: visão financeira operacional.
   - Consultor: valores financeiros bloqueados.
+  - Baixa financeira e fluxo de caixa restritos a Admin e Financeiro.
+  - Usuários são listados no módulo Segurança e cadastrados na aba `ERP_Usuarios`.
+  - Apenas Admin pode alternar a visão de perfil na tela.
 - Financeiro:
   - Carteira em dia vs. em atraso.
   - Valor total em atraso.
@@ -53,10 +74,13 @@ Login local de demonstração:
   - Baixa manual da taxa de matrícula pelo polo.
   - Controle de boleto de matrícula enviado.
   - Controle de alunos isentos de taxa de matrícula.
-- Cursos e Funil:
+- Matrículas e CRM de Leads:
   - Catálogo local de cursos.
   - Leads vinculados a curso validado.
-  - Kanban de captação e conversão para matriculado.
+  - Kanban de captação com cartões arrastáveis entre etapas.
+  - Conversão para Matriculado com criação de registro acadêmico local.
+  - Alerta automático de boleto de matrícula pendente.
+  - Campo manual de status de pagamento: Pendente, Pago ou Isento.
 - Metas:
   - Meta mensal editável.
   - Realizado, gap, conversão e projeção de fechamento.
@@ -81,6 +105,7 @@ Login local de demonstração:
 O app já está preparado para criar e usar abas extras na sua planilha:
 
 - `ERP_Config`
+- `ERP_Usuarios`
 - `ERP_Overrides`
 - `ERP_Retencao`
 - `ERP_Cursos`
@@ -134,5 +159,11 @@ Foram validados:
 - Login e renderização do módulo Acompanhamento.
 - RBAC do Financeiro.
 - Override local de status.
+- Painel inicial com botões de acesso rápido.
+- Módulo BI com metas mensal/anual, censo acadêmico e saúde financeira.
+- Override local de telefone/WhatsApp, e-mail e status de acompanhamento.
+- Kanban de matrículas com arrastar e soltar.
+- Alerta automático de boleto pendente ao matricular lead.
+- Atualização manual de boleto e pagamento de matrícula no CRM.
 - Renderização dos 10 módulos.
 - Endpoint de estado operacional com fallback local.

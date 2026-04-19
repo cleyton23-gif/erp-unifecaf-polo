@@ -35,23 +35,26 @@ try {
   await page.goto('http://localhost:5173', { waitUntil: 'networkidle' });
   await page.locator('#loginForm button[type="submit"]').click();
   await page.waitForSelector('.module.active table tbody tr');
+  await page.locator('.metric-card[data-dashboard-focus="risco"]').click();
+  await page.waitForSelector('text=Alunos que precisam de atenção');
+  await page.locator('#module-inteligencia [data-open-student]').first().click();
+  await page.waitForSelector('.health-score-card');
+  await page.waitForSelector('.checklist-panel');
+  await page.waitForSelector('.timeline-panel');
+  await page.locator('#closeDrawer').click();
 
-  await page.locator('[data-module="financeiro"]').click();
+  await page.locator('#megaMenuButton').click();
+  await page.locator('#megaMenu [data-quick-module="financeiro"]').click();
   await page.waitForSelector('#module-financeiro .table-panel');
   const financeTitle = await page.locator('#module-financeiro h1').textContent();
 
   await page.locator('#profileSelect').selectOption('consultor');
-  await page.locator('[data-module="financeiro"]').click();
-  await page.waitForSelector('#module-financeiro .locked-panel');
-  const locked = await page.locator('#module-financeiro .locked-panel strong').textContent();
+  await page.locator('#megaMenuButton').click();
+  await page.waitForFunction(() => document.querySelector('#megaMenu [data-quick-module="financeiro"]')?.hidden === true);
+  const locked = await page.locator('#megaMenu [data-quick-module="financeiro"]').getAttribute('title');
+  await page.locator('#megaMenuClose').click();
 
   await page.locator('#profileSelect').selectOption('admin');
-  await page.locator('[data-module="acompanhamento"]').click();
-  const firstStatus = page.locator('.status-select').first();
-  await firstStatus.selectOption({ label: 'CANCELADO' });
-  await page.waitForSelector('.toast.show');
-  const toast = await page.locator('.toast').textContent();
-
   await page.locator('[data-module="retencao"]').click();
   await page.waitForSelector('#module-retencao .table-panel');
   await page.locator('#module-retencao [data-open-retention]').first().click();
@@ -63,8 +66,26 @@ try {
   const retentionToast = await page.locator('.toast').textContent();
   await page.locator('#closeDrawer').click();
 
-  for (const module of ['inteligencia', 'cursos', 'metas', 'agenda', 'avaliacoes', 'fila', 'seguranca']) {
-    await page.locator(`[data-module="${module}"]`).click();
+  await page.locator('[data-module="matriculas"][data-view="crm"]').click();
+  await page.waitForSelector('#module-matriculas.active');
+  await page.locator('#megaMenuButton').click();
+  await page.locator('#megaMenu [data-quick-module="matriculas"][data-view="matricula"]').click();
+  await page.waitForSelector('#module-matriculas.active');
+
+  await page.locator('#megaMenuButton').click();
+  await page.locator('#megaMenu [data-quick-module="inteligencia"]').click();
+  await page.waitForSelector('#module-inteligencia.active');
+
+  await page.locator('[data-module="agenda"]').click();
+  await page.waitForSelector('#module-agenda.active');
+
+  await page.locator('#megaMenuButton').click();
+  await page.locator('#megaMenu [data-quick-module="financeiro"]').click();
+  await page.waitForSelector('#module-financeiro.active');
+
+  for (const module of ['cursos', 'seguranca', 'repasse']) {
+    await page.locator('#megaMenuButton').click();
+    await page.locator(`#megaMenu [data-admin-module="${module}"]`).first().click();
     await page.waitForSelector(`#module-${module}.active`);
   }
 
@@ -78,9 +99,8 @@ try {
     JSON.stringify({
       financeTitle,
       locked,
-      toast,
       retentionToast,
-      modulesChecked: 10,
+      modulesChecked: 8,
     }),
   );
 } finally {

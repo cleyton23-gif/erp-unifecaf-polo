@@ -3,6 +3,10 @@ const ERP_TABS = {
     name: 'ERP_Config',
     headers: ['chave', 'valor', 'atualizadoEm'],
   },
+  users: {
+    name: 'ERP_Usuarios',
+    headers: ['usuario', 'senha', 'nome', 'perfil', 'ativo', 'lastAccess'],
+  },
   overrides: {
     name: 'ERP_Overrides',
     headers: [
@@ -10,6 +14,9 @@ const ERP_TABS = {
       'status',
       'note',
       'lastContact',
+      'contactPhone',
+      'contactEmail',
+      'followStatus',
       'enrollmentPaid',
       'enrollmentExempt',
       'boletoSent',
@@ -37,7 +44,23 @@ const ERP_TABS = {
   },
   leads: {
     name: 'ERP_Leads',
-    headers: ['id', 'name', 'phone', 'course', 'origin', 'stage', 'consultant', 'createdAt'],
+    headers: [
+      'id',
+      'name',
+      'phone',
+      'course',
+      'origin',
+      'stage',
+      'consultant',
+      'enrollmentFee',
+      'boletoSent',
+      'boletoSentAt',
+      'enrollmentPaymentStatus',
+      'matriculatedAt',
+      'localStudentId',
+      'createdAt',
+      'updatedAt',
+    ],
   },
   localStudents: {
     name: 'ERP_Alunos_Local',
@@ -71,9 +94,65 @@ const ERP_TABS = {
     name: 'ERP_Decisoes',
     headers: ['id', 'area', 'title', 'owner', 'due', 'status', 'createdAt'],
   },
+  billing: {
+    name: 'ERP_Faturamento',
+    headers: [
+      'id',
+      'importedAt',
+      'importFile',
+      'competence',
+      'date',
+      'dueDate',
+      'studentName',
+      'cpf',
+      'ra',
+      'course',
+      'amount',
+      'rawJson',
+    ],
+  },
+  receipts: {
+    name: 'ERP_Recebimento',
+    headers: [
+      'id',
+      'importedAt',
+      'importFile',
+      'competence',
+      'date',
+      'paymentDate',
+      'studentName',
+      'cpf',
+      'ra',
+      'course',
+      'amount',
+      'rawJson',
+    ],
+  },
+  repasses: {
+    name: 'ERP_Repasse',
+    headers: [
+      'id',
+      'importedAt',
+      'importFile',
+      'competence',
+      'date',
+      'paymentDate',
+      'description',
+      'studentName',
+      'cpf',
+      'ra',
+      'course',
+      'amount',
+      'rawJson',
+    ],
+  },
   audit: {
     name: 'ERP_Auditoria',
     headers: ['timestamp', 'actor', 'action', 'details'],
+  },
+  auditTrail: {
+    name: 'ERP_Trilha_Local',
+    headers: ['id', 'at', 'actor', 'profile', 'action', 'details'],
   },
 };
 
@@ -88,10 +167,16 @@ function doGet(event) {
     return json_({ ok: true, message: 'Abas ERP criadas ou validadas.' });
   }
 
+  if (action === 'users') {
+    setupErpTabs_();
+    return json_({ ok: true, users: readUsers_(), readAt: new Date().toISOString() });
+  }
+
   setupErpTabs_();
   return json_({
     ok: true,
     state: readState_(),
+    users: readUsers_(),
     readAt: new Date().toISOString(),
   });
 }
@@ -111,6 +196,12 @@ function doPost(event) {
       setupErpTabs_();
       appendAudit_('system', 'setup', 'Abas ERP validadas.');
       return json_({ ok: true, message: 'Setup concluido.' });
+    }
+
+    if (body.action === 'users') {
+      writeArray_(ERP_TABS.users, body.users || []);
+      appendAudit_(body.actor || 'netlify', 'write_users', 'Usuarios sincronizados.');
+      return json_({ ok: true, savedAt: new Date().toISOString() });
     }
 
     if (!body.state) {
@@ -147,8 +238,18 @@ function setupErpTabs_() {
       sheet = spreadsheet.insertSheet(definition.name);
     }
 
-    const headerRange = sheet.getRange(1, 1, 1, definition.headers.length);
-    const existing = headerRange.getValues()[0];
+    let headerRange = sheet.getRange(1, 1, 1, definition.headers.length);
+    let existing = headerRange.getValues()[0];
+    if (definition.name === ERP_TABS.overrides.name) {
+      migrateOverrideColumns_(sheet, existing);
+      headerRange = sheet.getRange(1, 1, 1, definition.headers.length);
+      existing = headerRange.getValues()[0];
+    }
+    if (definition.name === ERP_TABS.leads.name) {
+      migrateLeadColumns_(sheet, existing);
+      headerRange = sheet.getRange(1, 1, 1, definition.headers.length);
+      existing = headerRange.getValues()[0];
+    }
     const mustWrite = definition.headers.some((header, index) => existing[index] !== header);
     if (mustWrite) {
       headerRange.setValues([definition.headers]);
@@ -160,6 +261,27 @@ function setupErpTabs_() {
   });
 
   seedConfig_();
+  seedUsers_();
+}
+
+function migrateOverrideColumns_(sheet, existingHeaders) {
+  const hasContactColumns = existingHeaders.includes('contactPhone');
+  const hasOldFinancialColumns = existingHeaders.includes('enrollmentPaid');
+  if (hasContactColumns || !hasOldFinancialColumns) return;
+
+  const lastContactIndex = existingHeaders.indexOf('lastContact') + 1;
+  if (lastContactIndex < 1) return;
+  sheet.insertColumnsAfter(lastContactIndex, 3);
+}
+
+function migrateLeadColumns_(sheet, existingHeaders) {
+  const hasEnrollmentFee = existingHeaders.includes('enrollmentFee');
+  const hasBoletoSent = existingHeaders.includes('boletoSent');
+  if (hasEnrollmentFee || !hasBoletoSent) return;
+
+  const consultantIndex = existingHeaders.indexOf('consultant') + 1;
+  if (consultantIndex < 1) return;
+  sheet.insertColumnsAfter(consultantIndex, 1);
 }
 
 function seedConfig_() {
@@ -169,6 +291,8 @@ function seedConfig_() {
   const defaults = [
     ['enrollmentFee', '99'],
     ['monthlyTarget', '65'],
+    ['annualTarget', '780'],
+    ['monthlyTicket', '299'],
     ['computersTotal', '24'],
     ['computersMaintenance', '2'],
   ];
@@ -178,6 +302,19 @@ function seedConfig_() {
   if (rowsToAppend.length) {
     sheet.getRange(sheet.getLastRow() + 1, 1, rowsToAppend.length, 3).setValues(rowsToAppend);
   }
+}
+
+function seedUsers_() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(ERP_TABS.users.name);
+  const values = rowsToObjects_(sheet.getDataRange().getValues());
+  if (values.length) return;
+
+  sheet.getRange(2, 1, 4, 6).setValues([
+    ['admin', 'admin', 'Administrador', 'admin', 'SIM', ''],
+    ['financeiro', '123456', 'Responsavel Financeiro', 'financeiro', 'SIM', ''],
+    ['retencao', '123456', 'Responsavel Retencao', 'consultor', 'SIM', ''],
+    ['consultor', '123456', 'Consultor Comercial', 'consultor', 'SIM', ''],
+  ]);
 }
 
 function readState_() {
@@ -191,8 +328,23 @@ function readState_() {
     exams: readArray_(ERP_TABS.exams),
     archive: readArray_(ERP_TABS.archive),
     decisions: readArray_(ERP_TABS.decisions),
+    billing: readArray_(ERP_TABS.billing),
+    receipts: readArray_(ERP_TABS.receipts),
+    repasses: readArray_(ERP_TABS.repasses),
+    auditTrail: readArray_(ERP_TABS.auditTrail),
     settings: readSettings_(),
   };
+}
+
+function readUsers_() {
+  return readArray_(ERP_TABS.users).map((user) => ({
+    usuario: user.usuario || '',
+    senha: user.senha || '',
+    nome: user.nome || '',
+    perfil: user.perfil || 'consultor',
+    ativo: user.ativo || 'SIM',
+    lastAccess: user.lastAccess || '',
+  }));
 }
 
 function writeState_(state) {
@@ -205,6 +357,10 @@ function writeState_(state) {
   writeArray_(ERP_TABS.exams, state.exams || []);
   writeArray_(ERP_TABS.archive, state.archive || []);
   writeArray_(ERP_TABS.decisions, state.decisions || []);
+  writeArray_(ERP_TABS.billing, state.billing || []);
+  writeArray_(ERP_TABS.receipts, state.receipts || []);
+  writeArray_(ERP_TABS.repasses, state.repasses || []);
+  writeArray_(ERP_TABS.auditTrail, state.auditTrail || []);
   writeSettings_(state.settings || {});
 }
 
@@ -216,6 +372,9 @@ function readOverrides_() {
       status: row.status || '',
       note: row.note || '',
       lastContact: row.lastContact || '',
+      contactPhone: row.contactPhone || '',
+      contactEmail: row.contactEmail || '',
+      followStatus: row.followStatus || '',
       enrollmentPaid: String(row.enrollmentPaid).toLowerCase() === 'true',
       enrollmentExempt: String(row.enrollmentExempt).toLowerCase() === 'true',
       boletoSent: String(row.boletoSent).toLowerCase() === 'true',
@@ -233,6 +392,9 @@ function writeOverrides_(overrides) {
     status: value.status || '',
     note: value.note || '',
     lastContact: value.lastContact || '',
+    contactPhone: value.contactPhone || '',
+    contactEmail: value.contactEmail || '',
+    followStatus: value.followStatus || '',
     enrollmentPaid: Boolean(value.enrollmentPaid),
     enrollmentExempt: Boolean(value.enrollmentExempt),
     boletoSent: Boolean(value.boletoSent),
