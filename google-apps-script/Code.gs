@@ -40,7 +40,27 @@ const ERP_TABS = {
   },
   courses: {
     name: 'ERP_Cursos',
-    headers: ['name', 'modality', 'local'],
+    headers: [
+      'key',
+      'name',
+      'modality',
+      'habilitation',
+      'duration',
+      'monthlyFee',
+      'discount10',
+      'discount20',
+      'discount30',
+      'discount40',
+      'discount50',
+      'discount60',
+      'authorization',
+      'local',
+      'updatedAt',
+    ],
+  },
+  teachers: {
+    name: 'ERP_Professores',
+    headers: ['id', 'name', 'education', 'phone', 'email', 'updatedAt'],
   },
   leads: {
     name: 'ERP_Leads',
@@ -68,11 +88,29 @@ const ERP_TABS = {
   },
   schedule: {
     name: 'ERP_Agenda',
-    headers: ['id', 'teacher', 'subject', 'start', 'end', 'room', 'capacity', 'status', 'reason'],
+    headers: [
+      'id',
+      'teacher',
+      'teacherPhone',
+      'teacherEmail',
+      'teacherEducation',
+      'subject',
+      'course',
+      'cohortYear',
+      'semester',
+      'studentKeys',
+      'studentCount',
+      'start',
+      'end',
+      'room',
+      'capacity',
+      'status',
+      'reason',
+    ],
   },
   exams: {
     name: 'ERP_Provas',
-    headers: ['id', 'student', 'discipline', 'start', 'duration', 'machines', 'status'],
+    headers: ['id', 'student', 'studentKey', 'cpf', 'ra', 'course', 'discipline', 'start', 'duration', 'machines', 'status'],
   },
   archive: {
     name: 'ERP_Arquivo',
@@ -92,7 +130,53 @@ const ERP_TABS = {
   },
   decisions: {
     name: 'ERP_Decisoes',
-    headers: ['id', 'area', 'title', 'owner', 'due', 'status', 'createdAt'],
+    headers: [
+      'id',
+      'planType',
+      'area',
+      'title',
+      'what',
+      'why',
+      'where',
+      'when',
+      'who',
+      'how',
+      'howMuch',
+      'kpi',
+      'periodKey',
+      'weekStart',
+      'owner',
+      'due',
+      'status',
+      'createdAt',
+      'updatedAt',
+    ],
+  },
+  snapshots: {
+    name: 'ERP_Snapshots',
+    headers: [
+      'periodKey',
+      'active',
+      'totalStudents',
+      'highRisk',
+      'noAva',
+      'retention',
+      'leads',
+      'confirmedMatriculations',
+      'pendingEnrollments',
+      'debtCount',
+      'debtTotal',
+      'enrollmentRevenue',
+      'recurringRevenue',
+      'repasse',
+      'qualityScore',
+      'qualityIssues',
+      'createdAt',
+    ],
+  },
+  importHistory: {
+    name: 'ERP_Importacoes',
+    headers: ['id', 'kind', 'label', 'fileName', 'importedAt', 'recordIds'],
   },
   billing: {
     name: 'ERP_Faturamento',
@@ -322,12 +406,16 @@ function readState_() {
     overrides: readOverrides_(),
     retention: readRetention_(),
     courses: readArray_(ERP_TABS.courses),
+    teachers: readArray_(ERP_TABS.teachers),
     leads: readArray_(ERP_TABS.leads),
     localStudents: readArray_(ERP_TABS.localStudents),
     schedule: readArray_(ERP_TABS.schedule),
     exams: readArray_(ERP_TABS.exams),
     archive: readArray_(ERP_TABS.archive),
     decisions: readArray_(ERP_TABS.decisions),
+    snapshots: readArray_(ERP_TABS.snapshots),
+    taskStatus: readSettingsObject_('taskStatus'),
+    importHistory: readArray_(ERP_TABS.importHistory),
     billing: readArray_(ERP_TABS.billing),
     receipts: readArray_(ERP_TABS.receipts),
     repasses: readArray_(ERP_TABS.repasses),
@@ -351,12 +439,16 @@ function writeState_(state) {
   writeOverrides_(state.overrides || {});
   writeRetention_(state.retention || {});
   writeArray_(ERP_TABS.courses, state.courses || []);
+  writeArray_(ERP_TABS.teachers, state.teachers || []);
   writeArray_(ERP_TABS.leads, state.leads || []);
   writeArray_(ERP_TABS.localStudents, state.localStudents || []);
   writeArray_(ERP_TABS.schedule, state.schedule || []);
   writeArray_(ERP_TABS.exams, state.exams || []);
   writeArray_(ERP_TABS.archive, state.archive || []);
   writeArray_(ERP_TABS.decisions, state.decisions || []);
+  writeArray_(ERP_TABS.snapshots, state.snapshots || []);
+  writeSettingsObject_('taskStatus', state.taskStatus || {});
+  writeArray_(ERP_TABS.importHistory, state.importHistory || []);
   writeArray_(ERP_TABS.billing, state.billing || []);
   writeArray_(ERP_TABS.receipts, state.receipts || []);
   writeArray_(ERP_TABS.repasses, state.repasses || []);
@@ -445,12 +537,38 @@ function readSettings_() {
   }, {});
 }
 
+function readSettingsObject_(key) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(ERP_TABS.config.name);
+  const rows = rowsToObjects_(sheet.getDataRange().getValues());
+  const found = rows.find((row) => row.chave === key);
+  if (!found || !found.valor) return {};
+  try {
+    return JSON.parse(found.valor);
+  } catch (error) {
+    return {};
+  }
+}
+
 function writeSettings_(settings) {
-  const rows = Object.entries(settings).map(([chave, valor]) => ({
-    chave,
-    valor,
+  const previous = readArray_(ERP_TABS.config).filter((row) => row.chave === 'taskStatus');
+  const rows = [
+    ...Object.entries(settings).map(([chave, valor]) => ({
+      chave,
+      valor,
+      atualizadoEm: new Date().toISOString(),
+    })),
+    ...previous,
+  ];
+  writeArray_(ERP_TABS.config, rows);
+}
+
+function writeSettingsObject_(key, value) {
+  const rows = readArray_(ERP_TABS.config).filter((row) => row.chave !== key);
+  rows.push({
+    chave: key,
+    valor: JSON.stringify(value || {}),
     atualizadoEm: new Date().toISOString(),
-  }));
+  });
   writeArray_(ERP_TABS.config, rows);
 }
 
