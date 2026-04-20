@@ -100,6 +100,7 @@ const els = {
     bi: document.querySelector('#module-bi'),
     acompanhamento: document.querySelector('#module-acompanhamento'),
     retencao: document.querySelector('#module-retencao'),
+    atendimento: document.querySelector('#module-atendimento'),
     financeiro: document.querySelector('#module-financeiro'),
     repasse: document.querySelector('#module-repasse'),
     cursos: document.querySelector('#module-cursos'),
@@ -277,10 +278,10 @@ function activateModule(module, shouldRender = true) {
 
 function applyAccessControl() {
   document.querySelectorAll('[data-module="financeiro"], [data-quick-module="financeiro"], [data-admin-module="financeiro"]').forEach((button) => {
-    const locked = !canAccessAdminModules();
+    const locked = !canSeeFinancial();
     button.hidden = locked;
     button.classList.toggle('restricted', locked);
-    button.title = locked ? 'Acesso restrito ao Administrador' : 'Acessar módulo';
+    button.title = locked ? 'Acesso restrito ao Administrador ou Financeiro' : 'Acessar módulo';
   });
   document.querySelectorAll('[data-module="seguranca"], [data-admin-module="seguranca"], [data-admin-module="cursos"]').forEach((button) => {
     const locked = !canAccessAdminModules();
@@ -289,13 +290,16 @@ function applyAccessControl() {
     button.title = locked ? 'Acesso restrito ao Administrador' : 'Acessar módulo';
   });
   document.querySelectorAll('[data-module="repasse"], [data-admin-module="repasse"]').forEach((button) => {
-    const locked = !canAccessAdminModules();
+    const locked = !canSeeFinancial();
     button.hidden = locked;
     button.classList.toggle('restricted', locked);
-    button.title = locked ? 'Acesso restrito ao Administrador' : 'Acessar módulo';
+    button.title = locked ? 'Acesso restrito ao Administrador ou Financeiro' : 'Acessar módulo';
   });
   document.querySelectorAll('[data-admin-menu]').forEach((menu) => {
     menu.hidden = !canAccessAdminModules();
+  });
+  document.querySelectorAll('[data-financial-only]').forEach((element) => {
+    element.hidden = !canSeeFinancial();
   });
   document.querySelectorAll('[data-admin-only]').forEach((element) => {
     element.hidden = !canAccessAdminModules();
@@ -681,6 +685,7 @@ function render() {
   renderBI();
   renderAcompanhamento();
   renderRetencao();
+  renderAtendimento();
   renderFinanceiro();
   renderRepasse();
   renderCursos();
@@ -1018,6 +1023,7 @@ function portalHome({
       links: [
         { label: 'Lista de alunos', detail: `${rows.length.toLocaleString('pt-BR')} registros`, attrs: 'data-quick-module="acompanhamento"' },
         { label: 'Acompanhamento do AVA', detail: `${noAvaRows.length.toLocaleString('pt-BR')} em alerta`, attrs: 'data-quick-module="retencao"' },
+        { label: 'Atendimento ao aluno', detail: `${state.store.serviceTickets.length.toLocaleString('pt-BR')} solicitações`, attrs: 'data-quick-module="atendimento"' },
         { label: 'Alunos ativos', detail: `${activeRows.length.toLocaleString('pt-BR')} ativos`, attrs: 'data-dashboard-focus="ativos"' },
         { label: 'Precisam de atenção', detail: `${totals.highRisk.toLocaleString('pt-BR')} alunos`, attrs: 'data-dashboard-focus="risco"' },
       ],
@@ -1464,10 +1470,88 @@ function renderRetencao() {
   `;
 }
 
+function renderAtendimento() {
+  const tickets = state.store.serviceTickets.slice().sort((a, b) => new Date(b.requestedAt || b.createdAt) - new Date(a.requestedAt || a.createdAt));
+  const open = tickets.filter((ticket) => !['Finalizado', 'Respondido'].includes(ticket.status));
+  const late = tickets.filter((ticket) => ticket.deadline && new Date(ticket.deadline) < startOfToday() && !['Finalizado', 'Respondido'].includes(ticket.status));
+  const headquarters = tickets.filter((ticket) => normalize(ticket.status).includes('sede') || normalize(ticket.sector).includes('sede'));
+
+  els.modules.atendimento.innerHTML = `
+    ${moduleTitle('Atendimento ao aluno', 'Protocolos, solicitações à sede e respostas acompanhadas pelo polo.')}
+    <section class="metric-grid">
+      ${metricCard('Solicitações abertas', open.length, 'Acompanhar até a resposta', open.length ? 'yellow' : 'green')}
+      ${metricCard('Com prazo vencido', late.length, 'Prioridade de cobrança', late.length ? 'red' : 'green')}
+      ${metricCard('Enviadas à sede', headquarters.length, 'Dependem de retorno externo', 'cyan')}
+      ${metricCard('Finalizadas', tickets.filter((ticket) => ['Finalizado', 'Respondido'].includes(ticket.status)).length, 'Histórico resolvido', 'green')}
+    </section>
+    <section class="split-grid">
+      <article class="panel">
+        <div class="panel-heading">
+          <div>${smallTitle('Nova solicitação', 'Problema, protocolo e responsável')}</div>
+          <span>Gestão de atendimento</span>
+        </div>
+        <form class="stack-form" data-form="service-ticket">
+          <input name="student" list="studentLookupOptions" placeholder="Buscar aluno por nome, CPF ou RA" required />
+          ${studentLookupDatalist()}
+          <div class="two-cols">
+            <input name="protocol" placeholder="Protocolo da sede ou interno" />
+            <select name="status">${serviceStatusOptions('Novo')}</select>
+          </div>
+          <div class="two-cols">
+            <input name="requestedAt" type="date" value="${new Date().toISOString().slice(0, 10)}" required />
+            <input name="deadline" type="date" placeholder="Prazo de resposta" />
+          </div>
+          <div class="two-cols">
+            <input name="attendant" placeholder="Quem atendeu no polo" value="${escapeHtml(state.currentUser?.nome || '')}" />
+            <input name="sector" placeholder="Setor responsável. Ex: Secretaria, Financeiro, Sede" />
+          </div>
+          <textarea name="problem" rows="3" placeholder="Descreva o problema do aluno" required></textarea>
+          <textarea name="response" rows="3" placeholder="Resposta, orientação ou retorno recebido"></textarea>
+          <button type="submit">Salvar atendimento</button>
+        </form>
+      </article>
+      <article class="panel">
+        <div class="panel-heading">
+          <div>${smallTitle('Fila de prioridade', 'Vencidos e pendentes primeiro')}</div>
+          <span>${open.length} abertas</span>
+        </div>
+        <div class="decision-list">
+          ${servicePriorityItems(tickets).join('') || '<div class="empty-state">Nenhuma solicitação aberta. Atendimento em dia.</div>'}
+        </div>
+      </article>
+    </section>
+    <section class="table-panel">
+      <div class="panel-heading">
+        <div>${smallTitle('Histórico de atendimentos', 'Aluno, problema, resposta e situação')}</div>
+        <div class="panel-actions">
+          <button class="mini-button" type="button" data-export="atendimentos">Exportar Excel</button>
+          <span>${tickets.length.toLocaleString('pt-BR')} registros</span>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Aluno</th>
+              <th>Protocolo</th>
+              <th>Problema</th>
+              <th>Solicitação</th>
+              <th>Atendente/Setor</th>
+              <th>Resposta</th>
+              <th>Situação</th>
+            </tr>
+          </thead>
+          <tbody>${tickets.map(serviceTicketRowTemplate).join('') || emptyRow('Nenhuma solicitação cadastrada.')}</tbody>
+        </table>
+      </div>
+    </section>
+  `;
+}
+
 function renderFinanceiro() {
-  const locked = !canAccessAdminModules();
+  const locked = !canSeeFinancial();
   if (locked) {
-    els.modules.financeiro.innerHTML = accessDenied('Financeiro', 'Módulo disponível apenas para Administrador.');
+    els.modules.financeiro.innerHTML = accessDenied('Financeiro', 'Módulo disponível apenas para Administrador ou Financeiro.');
     return;
   }
 
@@ -1493,19 +1577,39 @@ function renderFinanceiro() {
   const sourceSettledRows = rows.filter(isAcompanhamentoLegacyEnrollment).length;
   const pie = pieChart(paidRows.length, debtRows.length);
   const evolution = monthlyDebtEvolution();
+  const filter = getBiFilter();
+  const billedFiltered = totalFinancialRecords(state.store.billing, filter);
+  const receivedFiltered = totalFinancialRecords(state.store.receipts, filter);
+  const billedYear = totalFinancialRecords(state.store.billing, { month: 0, year: filter.year });
+  const receivedYear = totalFinancialRecords(state.store.receipts, { month: 0, year: filter.year });
+  const billedLifetime = totalFinancialRecords(state.store.billing, allHistoryFilter());
+  const receivedLifetime = totalFinancialRecords(state.store.receipts, allHistoryFilter());
+  const repasseLifetime = totalFinancialRecords(state.store.repasses, allHistoryFilter());
 
   els.modules.financeiro.innerHTML = `
     ${moduleTitle('Financeiro e valores repassados', hasFinancialSource ? 'Mensalidades calculadas pelas planilhas de faturamento e recebimento.' : 'Importe faturamento e recebimento para ativar os indicadores financeiros.')}
     <section class="finance-subnav">
-      <span>Histórico preservado: novos meses entram abaixo dos anteriores.</span>
+      <span>Dados lidos diretamente das abas Faturamento e Recebimento do banco.</span>
+      <form class="inline-form bi-controls" data-form="bi-filter">
+        <select name="biMonth">${monthOptions(filter.month)}</select>
+        <select name="biYear">${yearOptions(filter.year)}</select>
+        <button type="submit">Atualizar período</button>
+      </form>
+      <button class="mini-button" type="button" data-refresh-operational>Atualizar banco</button>
       <button class="mini-button" type="button" data-admin-module="repasse">Ver valores repassados</button>
-      <button class="mini-button" type="button" data-undo-import>Desfazer última importação</button>
       <button class="mini-button" type="button" data-export="executivo">Exportar resumo</button>
     </section>
     <section class="metric-grid">
       ${metricCard('Em dia', paidRows.length, 'Carteira sem atraso', 'green')}
       ${metricCard('Em atraso', debtRows.length, 'Alunos com pagamento em aberto', 'red')}
       ${metricCard('Total em atraso', formatMoney(debtTotal), 'Faturado menos recebido', 'yellow')}
+      ${metricCard('Faturamento filtrado', formatMoney(billedFiltered), periodLabel(filter), 'green')}
+      ${metricCard('Recebimento filtrado', formatMoney(receivedFiltered), periodLabel(filter), 'cyan')}
+      ${metricCard('Faturado no ano', formatMoney(billedYear), yearlyLabel(filter), 'green')}
+      ${metricCard('Recebido no ano', formatMoney(receivedYear), yearlyLabel(filter), 'cyan')}
+      ${metricCard('Faturado histórico', formatMoney(billedLifetime), 'Desde a fundação do polo', 'green')}
+      ${metricCard('Recebido histórico', formatMoney(receivedLifetime), 'Desde a fundação do polo', 'cyan')}
+      ${metricCard('Repassado histórico', formatMoney(repasseLifetime), 'Repasse final da sede', 'yellow')}
       ${metricCard('Base sem boleto', sourceSettledRows, `Regularizada ate ${ACOMPANHAMENTO_MATRICULA_CUTOFF_LABEL}`, 'green')}
       ${metricCard('Novas a regularizar', sourcePendingEnrollments.length, `Desde ${ACOMPANHAMENTO_NEW_ENROLLMENT_LABEL}`, sourcePendingEnrollments.length ? 'yellow' : 'green')}
       ${metricCard('Taxas novas confirmadas', formatMoney(receivedEnrollment), `A confirmar: ${formatMoney(expectedEnrollment)}`, 'cyan')}
@@ -1515,25 +1619,23 @@ function renderFinanceiro() {
     <section class="split-grid">
       <article class="panel">
         <div class="panel-heading">
-          <div>${smallTitle('Faturamento da sede', 'Importe sem apagar meses anteriores')}</div>
+          <div>${smallTitle('Faturamento da sede', 'Lido direto do banco')}</div>
           <span>${state.store.billing.length.toLocaleString('pt-BR')} linhas</span>
         </div>
-        <label class="upload-box financial-upload">
-          Importar CSV de Faturamento
-          <input type="file" accept=".csv,text/csv" data-financial-import="billing" />
-        </label>
-        <p class="muted">O arquivo mensal entra no histórico e o sistema evita duplicar linhas iguais.</p>
+        <p class="muted">Use as colunas <strong>Valor Faturado</strong> e <strong>DataFaturado</strong>. Novas linhas coladas na aba Faturamento entram no cálculo ao atualizar o banco.</p>
+        <div class="finance-kpi-list">
+          ${progressLine('Total filtrado', percent(billedFiltered, Math.max(billedLifetime, 1)), `${formatMoney(billedFiltered)} no período / ${formatMoney(billedLifetime)} desde a fundação`)}
+        </div>
       </article>
       <article class="panel">
         <div class="panel-heading">
-          <div>${smallTitle('Recebimentos da sede', 'Confirmação dos pagamentos mensais')}</div>
+          <div>${smallTitle('Recebimentos da sede', 'Lido direto do banco')}</div>
           <span>${state.store.receipts.length.toLocaleString('pt-BR')} linhas</span>
         </div>
-        <label class="upload-box financial-upload">
-          Importar CSV de Recebimento
-          <input type="file" accept=".csv,text/csv" data-financial-import="receipts" />
-        </label>
-        <p class="muted">Esta base também é acumulativa. Cada novo mês entra abaixo do histórico salvo.</p>
+        <p class="muted">Use as colunas <strong>Valor Pago</strong> e <strong>Data Pagamento</strong>. O recebimento real é calculado pelo valor pago registrado pela sede.</p>
+        <div class="finance-kpi-list">
+          ${progressLine('Total filtrado', percent(receivedFiltered, Math.max(receivedLifetime, 1)), `${formatMoney(receivedFiltered)} no período / ${formatMoney(receivedLifetime)} desde a fundação`)}
+        </div>
       </article>
     </section>
     <section class="split-grid">
@@ -1587,7 +1689,7 @@ function renderFinanceiro() {
               <th>Status</th>
               <th>Valor em atraso</th>
               <th>Meses em aberto</th>
-              <th>Taxa do polo</th>
+              <th>Ação</th>
             </tr>
           </thead>
           <tbody>
@@ -1601,41 +1703,53 @@ function renderFinanceiro() {
 
 function renderRepasse() {
   if (!canSeeFinancial()) {
-    els.modules.repasse.innerHTML = accessDenied('Valores repassados', 'Acesso disponível apenas para Administrador.');
+    els.modules.repasse.innerHTML = accessDenied('Valores repassados', 'Acesso disponível apenas para Administrador ou Financeiro.');
     return;
   }
 
   const filter = getBiFilter();
   const rows = repasseRows(filter);
   const currentTotal = sumBy(rows, (row) => row.amount);
-  const monthTotal = sumBy(repasseRows({ month: Number(filter.month || new Date().getMonth() + 1), year: filter.year }), (row) => row.amount);
   const yearTotal = sumBy(repasseRows({ month: 0, year: filter.year }), (row) => row.amount);
-  const previousMonthTotal = sumBy(repasseRows(previousMonthFilter(filter)), (row) => row.amount);
-  const previousYearTotal = sumBy(repasseRows(previousYearFilter(filter)), (row) => row.amount);
+  const lifetimeTotal = totalFinancialRecords(state.store.repasses, allHistoryFilter());
+  const previousMonthTotal = Number(filter.year || 0) ? sumBy(repasseRows(previousMonthFilter(filter)), (row) => row.amount) : 0;
+  const previousYearTotal = Number(filter.year || 0) ? sumBy(repasseRows(previousYearFilter(filter)), (row) => row.amount) : 0;
   const grouped = repasseEvolution();
   const reconciliation = repasseReconciliation(filter, currentTotal);
+  const repasseControls = `
+    <section class="finance-subnav">
+      <span>Repasse final importado da sede. O sistema exibe o valor real e confere a faixa esperada sobre o recebimento anterior.</span>
+      <form class="inline-form bi-controls" data-form="bi-filter">
+        <select name="biMonth">${monthOptions(filter.month)}</select>
+        <select name="biYear">${yearOptions(filter.year)}</select>
+        <button type="submit">Atualizar repasse</button>
+      </form>
+      <button class="mini-button" type="button" data-refresh-operational>Atualizar banco</button>
+      <button class="mini-button" type="button" data-export="repasse">Exportar repasse</button>
+    </section>
+  `;
 
   els.modules.repasse.innerHTML = `
     ${moduleTitle('Valores repassados', 'Histórico dos valores enviados pela sede ao polo.')}
+    ${repasseControls}
     <section class="metric-grid">
       ${metricCard('Valor filtrado', formatMoney(currentTotal), periodLabel(filter), 'green')}
-      ${metricCard('Valor do mês', formatMoney(monthTotal), `Mês vigente do filtro`, 'cyan')}
+      ${metricCard('Acumulado do ano', formatMoney(yearTotal), yearlyLabel(filter), 'cyan')}
       ${metricCard('Base do repasse', formatMoney(reconciliation.baseReceived), 'Recebido no mes anterior', 'cyan')}
       ${metricCard('% efetivo', reconciliation.rateLabel, 'Faixa esperada: 35% a 40%', reconciliation.tone)}
-      ${metricCard('Acumulado anual', formatMoney(yearTotal), `Ano ${filter.year}`, 'green')}
-      ${metricCard('Linhas importadas', state.store.repasses.length, 'Histórico preservado', 'yellow')}
+      ${metricCard('Repasse histórico', formatMoney(lifetimeTotal), 'Desde a fundação do polo', 'green')}
+      ${metricCard('Linhas no banco', state.store.repasses.length, 'Histórico consolidado', 'yellow')}
     </section>
     <section class="split-grid">
       <article class="panel">
         <div class="panel-heading">
-          <div>${smallTitle('Importar valores repassados', 'Novos dados entram abaixo do histórico')}</div>
+          <div>${smallTitle('Valores repassados da sede', 'Lido direto do banco')}</div>
           <span>${state.store.repasses.length.toLocaleString('pt-BR')} linhas</span>
         </div>
-        <label class="upload-box financial-upload">
-          Importar CSV de valores repassados
-          <input type="file" accept=".csv,text/csv" data-financial-import="repasses" />
-        </label>
-        <p class="muted">Cole ou importe os dados mensais da sede. Cada arquivo novo entra abaixo dos anteriores.</p>
+        <p class="muted">Cole os novos repasses na aba Repasse ou Valores Repassados do banco. O sistema usa o valor final informado pela sede para decisão.</p>
+        <div class="finance-kpi-list">
+          ${progressLine('Repasse consolidado', percent(currentTotal, Math.max(lifetimeTotal, 1)), `${formatMoney(currentTotal)} filtrado / ${formatMoney(lifetimeTotal)} desde a fundação`)}
+        </div>
       </article>
       <article class="panel">
         <div class="panel-heading">
@@ -1690,7 +1804,7 @@ function renderRepasse() {
                 <th>Arquivo</th>
               </tr>
             </thead>
-            <tbody>${rows.slice(0, 240).map(repasseRowTemplate).join('') || emptyRow('Nenhum repasse importado neste filtro.')}</tbody>
+            <tbody>${rows.map(repasseRowTemplate).join('') || emptyRow('Nenhum repasse importado neste filtro.')}</tbody>
           </table>
         </div>
       </article>
@@ -3603,6 +3717,7 @@ function handleSubmit(event) {
 
   if (formType === 'student-override') saveStudentOverride(form.dataset.studentKey, data);
   if (formType === 'retention-contact') saveRetentionContact(form.dataset.studentKey, data);
+  if (formType === 'service-ticket') saveServiceTicket(data);
   if (formType === 'course') addCourse(data);
   if (formType === 'teacher') saveTeacher(data);
   if (formType === 'change-password') changeCurrentPassword(data);
@@ -3706,9 +3821,21 @@ function handleClick(event) {
     return;
   }
 
+  const refreshOperational = event.target.closest('[data-refresh-operational]');
+  if (refreshOperational) {
+    refreshOperationalData();
+    return;
+  }
+
   const reportButton = event.target.closest('[data-report]');
   if (reportButton) {
     openExecutiveReport(reportButton.dataset.report);
+    return;
+  }
+
+  const openMenu = event.target.closest('[data-open-mega-menu]');
+  if (openMenu) {
+    openMegaMenu();
     return;
   }
 
@@ -3830,6 +3957,18 @@ function handleChange(event) {
   const statusSelect = event.target.closest('[data-status-key]');
   if (statusSelect) {
     saveStudentOverride(statusSelect.dataset.statusKey, { status: statusSelect.value });
+    return;
+  }
+
+  const serviceStatus = event.target.closest('[data-service-status]');
+  if (serviceStatus) {
+    updateServiceTicketField(serviceStatus.dataset.serviceStatus, 'status', serviceStatus.value);
+    return;
+  }
+
+  const serviceResponse = event.target.closest('[data-service-response]');
+  if (serviceResponse) {
+    updateServiceTicketField(serviceResponse.dataset.serviceResponse, 'response', serviceResponse.value);
     return;
   }
 
@@ -3998,6 +4137,45 @@ function saveRetentionContact(key, data) {
   render();
 }
 
+function saveServiceTicket(data) {
+  const student = resolveStudentSelection(data.student) || rowByKey(data.student);
+  if (!student) {
+    toast('Selecione o aluno correto por nome, CPF ou RA.');
+    return;
+  }
+  const ticket = normalizeServiceTicket({
+    ...data,
+    studentKey: student.key,
+    studentName: student.name,
+    cpf: student.cpf,
+    ra: student.ra,
+    course: student.course,
+  });
+  state.store.serviceTickets.push(ticket);
+  recordAudit('Atendimento registrado', `${ticket.studentName}: ${ticket.problem}`);
+  persist();
+  render();
+  toast('Solicitação registrada para acompanhamento.');
+}
+
+function updateServiceTicketField(id, field, value) {
+  const ticket = state.store.serviceTickets.find((item) => item.id === id);
+  if (!ticket) return;
+  ticket[field] = cleanText(value);
+  ticket.updatedAt = new Date().toISOString();
+  recordAudit('Atendimento atualizado', `${ticket.studentName}: ${field}`);
+  persist();
+  renderAtendimento();
+  toast('Atendimento atualizado.');
+}
+
+function normalizeFinancialCollection(records, kind) {
+  if (!Array.isArray(records)) return [];
+  return records
+    .map((item, index) => normalizeStoredFinancialRecord(item, kind, index))
+    .filter((record) => isValidFinancialRecord(record, kind));
+}
+
 function appendFinancialCsv(kind, csvText, fileName) {
   if (!canSeeFinancial()) {
     toast('Importação financeira disponível apenas para Administrador e Financeiro.');
@@ -4012,7 +4190,7 @@ function appendFinancialCsv(kind, csvText, fileName) {
   const importedAt = new Date().toISOString();
   const records = parsed.rows
     .map((row, index) => normalizeFinancialRecord(row, collectionName, index, fileName, importedAt))
-    .filter((record) => record.studentName || record.cpf || record.ra || record.description || record.amount);
+    .filter((record) => isValidFinancialRecord(record, collectionName));
   const fresh = records.filter((record) => !existingIds.has(record.id));
 
   state.store[collectionName].push(...fresh);
@@ -4077,7 +4255,7 @@ function buildImportReview(kind, csvText, fileName) {
   const importedAt = new Date().toISOString();
   const records = parsed.rows
     .map((row, index) => normalizeFinancialRecord(row, collectionName, index, fileName, importedAt))
-    .filter((record) => record.studentName || record.cpf || record.ra || record.description || record.amount);
+    .filter((record) => isValidFinancialRecord(record, collectionName));
   const fresh = records.filter((record) => !existingIds.has(record.id));
   const unmatched = fresh.filter((record) => collectionName !== 'repasses' && !findStudentForFinancial(record)).length;
   const zeroAmount = fresh.filter((record) => !Number(record.amount || 0)).length;
@@ -4182,14 +4360,40 @@ function undoLastImport() {
 }
 
 function normalizeFinancialRecord(row, kind, index, fileName, importedAt) {
-  const studentName = getLooseValue(row, ['Nome', 'Aluno', 'Nome Aluno', 'Discente', 'Cliente', 'Sacado']);
-  const description = getLooseValue(row, ['Descricao', 'Descrição', 'Historico', 'Histórico', 'Lancamento', 'Lançamento', 'Origem', 'Categoria']);
-  const cpf = getLooseValue(row, ['CPF', 'Documento', 'CPF Aluno', 'CPF/CNPJ']);
-  const ra = getLooseValue(row, ['RA', 'Registro Academico', 'Registro Acadêmico', 'Matricula', 'Matrícula']);
+  const studentName = getLooseValue(row, ['Nome', 'Aluno', 'Nome Aluno', 'Nome do Aluno', 'Discente', 'Cliente', 'Sacado', 'Solicitante']);
+  const description = getLooseValue(row, ['Descricao', 'Descrição', 'Historico', 'Histórico', 'Lancamento', 'Lançamento', 'Origem', 'Categoria', 'Tipo']);
+  const cpf = getLooseValue(row, ['CPF', 'CPF do Aluno', 'Documento', 'CPF Aluno', 'CPF/CNPJ']);
+  const ra = getLooseValue(row, ['RA', 'RA do Aluno', 'Registro Academico', 'Registro Acadêmico', 'Matricula', 'Matrícula']);
   const course = getLooseValue(row, ['Curso', 'Nome Curso', 'Produto']);
+  const installmentId = getLooseValue(row, [
+    'ID da Parcela',
+    'Id da Parcela',
+    'ID Parcela',
+    'Id Parcela',
+    'Identificador Parcela',
+    'Codigo Parcela',
+    'CÃ³digo Parcela',
+    'ID Titulo',
+    'ID TÃ­tulo',
+    'Id Titulo',
+    'Id TÃ­tulo',
+    'Nosso Numero',
+    'Nosso NÃºmero',
+    'Numero Documento',
+    'NÃºmero Documento',
+    'Documento Parcela',
+  ]);
   const competence = getLooseValue(row, [
     'Competencia',
     'Competência',
+    'Mes/Ano',
+    'Mês/Ano',
+    'Mes Ano',
+    'Mês Ano',
+    'Mes / Ano',
+    'Mês / Ano',
+    'Periodo - Mes',
+    'Período - Mês',
     'Mes',
     'Mês',
     'Mes Referencia',
@@ -4198,27 +4402,13 @@ function normalizeFinancialRecord(row, kind, index, fileName, importedAt) {
     'Referência',
     'Periodo',
     'Período',
-  ]);
-  const date = getLooseValue(row, ['Data', 'Data Faturamento', 'Emissao', 'Emissão']);
+  ]) || cleanText(row.__contextPeriod) || inferFinancialCompetenceFromFile(fileName);
+  const date = getLooseValue(row, ['Data', 'DataFaturado', 'Data Faturado', 'Data do Faturamento', 'Data Faturamento', 'Emissao', 'Emissão']);
   const dueDate = getLooseValue(row, ['Vencimento', 'Data Vencimento', 'Data de Vencimento']);
   const paymentDate = getLooseValue(row, ['Pagamento', 'Data Pagamento', 'Data Recebimento', 'Recebimento', 'Data de Recebimento']);
-  const amount = parseMoney(
-    getLooseValue(row, [
-      'Valor',
-      'Valor Faturado',
-      'Valor Mensalidade',
-      'Mensalidade',
-      'Valor Recebido',
-      'Recebido',
-      'Total',
-      'Valor Pago',
-      'Valor Repasse',
-      'Repasse',
-      'Valor Repassado',
-      'Repasse Polo',
-    ]),
-  );
+  const amount = financialAmount(row, kind);
   const normalized = {
+    kind,
     importedAt,
     importFile: fileName || '',
     competence: competence || inferFinancialCompetence(date || dueDate || paymentDate),
@@ -4230,11 +4420,37 @@ function normalizeFinancialRecord(row, kind, index, fileName, importedAt) {
     cpf,
     ra,
     course,
+    installmentId,
     amount,
     rawJson: JSON.stringify(row),
   };
   normalized.id = financialRecordId(kind, normalized, index);
   return normalized;
+}
+
+function financialAmount(row, kind) {
+  const common = ['Valor', 'Valor Total', 'Total', 'Total Geral', 'Total geral'];
+  const byKind = {
+    billing: ['Valor Faturado', 'ValorFaturado', 'Faturado', 'Valor Mensalidade', 'Mensalidade', 'Parcela', 'Valor Parcela', ...common],
+    receipts: ['Valor Pago', 'ValorPago', 'Total Geral', 'Total geral', 'Valor Recebido', 'Recebido', 'Pago', 'Banco', 'Cartao', 'Cartão', ...common],
+    repasses: ['Repasse Final', 'Valor Repasse Final', 'Valor Repasse', 'Repasse', 'Valor Repassado', 'Repassado', 'Repasse Polo', ...common],
+  };
+  const direct = parseMoney(getLooseValue(row, byKind[kind] || common));
+  if (direct) return direct;
+  const bank = parseMoney(getLooseValue(row, ['Banco']));
+  const card = parseMoney(getLooseValue(row, ['Cartao', 'Cartão']));
+  return bank + card;
+}
+
+function isValidFinancialRecord(record, kind) {
+  if (!Number(record.amount || 0)) return false;
+  const aggregate = [record.studentName, record.description, record.ra, record.cpf].some((value) => {
+    const normalized = normalize(value);
+    return normalized === 'total' || normalized === 'total geral' || normalized === 'resumo' || normalized === 'analitico';
+  });
+  if (aggregate) return false;
+  if (kind === 'repasses') return true;
+  return Boolean(record.cpf || record.ra || record.studentName);
 }
 
 function getLooseValue(row, candidates) {
@@ -4257,6 +4473,7 @@ function financialRecordId(kind, record, index) {
     [
       kind,
       financialStudentKey(record),
+      normalizeInstallmentId(record.installmentId),
       normalize(record.competence),
       normalize(record.date || record.dueDate || record.paymentDate),
       Number(record.amount || 0).toFixed(2),
@@ -4270,13 +4487,54 @@ function inferFinancialCompetence(value) {
   return date ? `${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}` : '';
 }
 
+function inferFinancialCompetenceFromFile(fileName = '') {
+  const parsed = parseFinancialPeriod(fileName);
+  return parsed ? `${String(parsed.getMonth() + 1).padStart(2, '0')}/${parsed.getFullYear()}` : '';
+}
+
 function financialStudentKey(record) {
+  const identity = financialIdentityKey(record);
+  return identity;
+}
+
+function financialIdentityKey(record) {
+  const ra = normalizeRa(record.ra);
+  if (ra) return `ra:${ra}`;
   const cpf = cleanText(record.cpf).replace(/\D/g, '');
+  if (cpf) return `cpf:${cpf}`;
+  const name = normalize(record.studentName);
+  return name ? `nome:${name}` : '';
+}
+
+function rowFinancialIdentityKey(row) {
+  const ra = normalizeRa(row.ra);
+  if (ra) return `ra:${ra}`;
+  const cpf = cleanText(row.cpf).replace(/\D/g, '');
+  if (cpf) return `cpf:${cpf}`;
+  const name = normalize(row.name);
+  return name ? `nome:${name}` : '';
+}
+
+function normalizeInstallmentId(value) {
+  return normalize(value).replace(/[^a-z0-9]/g, '');
+}
+
+function financialCourseKey(record) {
   const course = normalize(record.course);
-  const suffix = course ? `|curso:${course}` : '';
-  if (cpf) return `cpf:${cpf}${suffix}`;
-  if (record.ra) return `ra:${normalize(record.ra)}${suffix}`;
-  return `nome:${normalize(record.studentName)}${suffix}`;
+  if (isPlaceholderValue(record.course) || ['sem curso', 'todo', 'todos', 'tudo'].includes(course)) return '';
+  return course;
+}
+
+function normalizeRa(value) {
+  const text = cleanText(value);
+  if (isPlaceholderValue(text)) return '';
+  const digits = text.replace(/\D/g, '');
+  return digits ? digits.replace(/^0+/, '') || '0' : normalize(text);
+}
+
+function isPlaceholderValue(value) {
+  const normalized = normalize(value);
+  return !normalized || ['-', 'nulo', 'null', 'sem informacao', 'sem informação', 'nao informado', 'não informado'].includes(normalized);
 }
 
 function addCourse(data) {
@@ -4639,25 +4897,62 @@ function parseCsv(text) {
     rows.push(current);
   }
 
-  const headers = rows.shift()?.map(cleanText) ?? [];
+  const headerIndex = detectHeaderIndex(rows);
+  const contextPeriod = inferCsvContextPeriod(rows.slice(0, headerIndex));
+  const headers = (rows[headerIndex] || []).map(cleanText);
   return {
     headers,
     rows: rows
+      .slice(headerIndex + 1)
       .filter((row) => row.some(Boolean))
       .map((row) =>
         headers.reduce((record, header, index) => {
           record[header] = cleanText(row[index] ?? '');
+          record.__contextPeriod = contextPeriod;
           return record;
         }, {}),
       ),
   };
 }
 
+function detectHeaderIndex(rows) {
+  let best = 0;
+  let bestScore = -1;
+  rows.forEach((row, index) => {
+    const cells = row.map(cleanText).filter(Boolean);
+    if (cells.length < 2) return;
+    const normalized = cells.map(normalize);
+    const score = normalized.reduce((total, cell) => {
+      if (['ra', 'ra do aluno', 'cpf', 'cpf do aluno', 'nome', 'nome do aluno', 'curso', 'parcela', 'valor', 'total geral'].includes(cell)) return total + 3;
+      if (cell.includes('aluno') || cell.includes('curso') || cell.includes('competencia') || cell.includes('periodo') || cell.includes('receb') || cell.includes('fatur') || cell.includes('repasse')) return total + 1;
+      return total;
+    }, 0);
+    if (score > bestScore || (score === bestScore && cells.length > rows[best]?.filter(Boolean).length)) {
+      best = index;
+      bestScore = score;
+    }
+  });
+  return bestScore >= 3 ? best : 0;
+}
+
+function inferCsvContextPeriod(rows) {
+  const values = rows.flat().map(cleanText).filter(Boolean);
+  for (const value of values) {
+    if (parseFinancialPeriod(value)) return value;
+  }
+  return '';
+}
+
 function detectCsvDelimiter(text) {
-  const firstLine = cleanText(text).split(/\r?\n/)[0] || '';
-  const semicolons = (firstLine.match(/;/g) || []).length;
-  const commas = (firstLine.match(/,/g) || []).length;
-  return semicolons > commas ? ';' : ',';
+  const lines = cleanText(text).split(/\r?\n/).filter(Boolean).slice(0, 20);
+  const score = { ';': 0, ',': 0, '\t': 0 };
+  lines.forEach((line) => {
+    score[';'] += (line.match(/;/g) || []).length;
+    score[','] += (line.match(/,/g) || []).length;
+    score['\t'] += (line.match(/\t/g) || []).length;
+  });
+  const best = Object.entries(score).sort((a, b) => b[1] - a[1])[0];
+  return best?.[1] ? best[0] : ',';
 }
 
 function rowKey(row, index) {
@@ -4708,7 +5003,7 @@ function isRetentionEligible(row) {
 }
 
 function canSeeFinancial() {
-  return canAccessAdminModules();
+  return state.profile === 'admin' || state.profile === 'financeiro';
 }
 
 function canAccessAdminModules() {
@@ -4903,39 +5198,56 @@ function enrollmentSettlementForStudent(row) {
 }
 
 function isRestrictedModule(module) {
-  if (['financeiro', 'repasse', 'seguranca', 'cursos'].includes(module)) return !canAccessAdminModules();
+  if (['financeiro', 'repasse'].includes(module)) return !canSeeFinancial();
+  if (['seguranca', 'cursos'].includes(module)) return !canAccessAdminModules();
   return false;
 }
 
 function restrictedMessage(module) {
-  if (['financeiro', 'repasse', 'seguranca', 'cursos'].includes(module)) return 'Acesso disponível apenas para Administrador.';
+  if (['financeiro', 'repasse'].includes(module)) return 'Acesso disponível apenas para Administrador ou Financeiro.';
+  if (['seguranca', 'cursos'].includes(module)) return 'Acesso disponível apenas para Administrador.';
   return 'Acesso restrito.';
 }
 
 function getBiFilter() {
   const today = new Date();
+  const settings = state.store.settings || {};
   return {
-    month: Number(state.store.settings.biMonth || today.getMonth() + 1),
-    year: Number(state.store.settings.biYear || today.getFullYear()),
+    month: settings.biMonth === undefined || settings.biMonth === '' ? today.getMonth() + 1 : Number(settings.biMonth),
+    year: settings.biYear === undefined || settings.biYear === '' ? today.getFullYear() : Number(settings.biYear),
   };
 }
 
 function monthOptions(selected) {
   return [
-    '<option value="0">Ano inteiro</option>',
+    `<option value="0" ${Number(selected) === 0 ? 'selected' : ''}>Todos os meses</option>`,
     ...MONTHS.map((month, index) => `<option value="${index + 1}" ${Number(selected) === index + 1 ? 'selected' : ''}>${month}</option>`),
   ].join('');
 }
 
 function yearOptions(selected) {
   const current = new Date().getFullYear();
-  return Array.from({ length: 6 }, (_, index) => current - 3 + index)
+  return [
+    `<option value="0" ${Number(selected) === 0 ? 'selected' : ''}>Todo histórico</option>`,
+    ...Array.from({ length: 8 }, (_, index) => current - 5 + index)
     .map((year) => `<option value="${year}" ${Number(selected) === year ? 'selected' : ''}>${year}</option>`)
-    .join('');
+  ].join('');
 }
 
 function periodLabel(filter) {
-  return filter.month ? `${MONTHS[filter.month - 1]}/${String(filter.year).slice(-2)}` : `Ano ${filter.year}`;
+  const month = Number(filter.month || 0);
+  const year = Number(filter.year || 0);
+  if (!year && !month) return 'Todo histórico';
+  if (!year && month) return `${MONTHS[month - 1]} - todos os anos`;
+  return month ? `${MONTHS[month - 1]}/${String(year).slice(-2)}` : `Ano ${year}`;
+}
+
+function yearlyLabel(filter) {
+  return Number(filter.year || 0) ? `Ano ${filter.year}` : 'Todo histórico';
+}
+
+function allHistoryFilter() {
+  return { month: 0, year: 0 };
 }
 
 function filterRowsByPeriod(rows, filter) {
@@ -4992,7 +5304,7 @@ function monthYearDate(value) {
 
 function matchesPeriod(date, filter) {
   if (!date || Number.isNaN(date.getTime())) return false;
-  if (date.getFullYear() !== Number(filter.year)) return false;
+  if (Number(filter.year || 0) && date.getFullYear() !== Number(filter.year)) return false;
   return !Number(filter.month) || date.getMonth() + 1 === Number(filter.month);
 }
 
@@ -5054,34 +5366,43 @@ function hasBillingReceiptSource() {
 }
 
 function buildFinancialPosition(visibleRows = state.allRows) {
-  const visibleKeys = new Set(visibleRows.map((row) => row.key));
-  const receiptGroups = groupFinancialRecords(state.store.receipts);
-  const billingGroups = groupFinancialRecords(state.store.billing);
+  const visibleIdentityKeys = new Set(visibleRows.map(rowFinancialIdentityKey).filter(Boolean));
+  const receiptGroups = groupFinancialRecordsByIdentity(state.store.receipts);
+  const billingGroups = groupFinancialRecordsByIdentity(state.store.billing);
   const rows = [];
 
-  billingGroups.forEach((group, key) => {
-    const receipts = receiptGroups.get(key) || { amount: 0, records: [] };
+  billingGroups.forEach((group, identityKey) => {
+    const receipts = receiptGroups.get(identityKey) || { amount: 0, records: [], periods: {}, courses: [] };
     const first = group.records[0] || {};
     const matched = findStudentForFinancial(first);
-    if (matched && visibleKeys.size && !visibleKeys.has(matched.key)) return;
-    const due = Math.max(0, group.amount - receipts.amount);
-    const interestOrLatePayment = Math.max(0, receipts.amount - group.amount);
+    if (visibleIdentityKeys.size && !visibleIdentityKeys.has(identityKey)) return;
+    const reconciliation = reconcileFinancialGroup(group, receipts);
+    const periods = reconciliation.periods;
+    const billed = reconciliation.billed;
+    const received = reconciliation.received;
+    const receivedApplied = reconciliation.receivedApplied;
+    const duePeriods = reconciliation.duePeriods;
+    const due = reconciliation.due;
+    const interestOrLatePayment = reconciliation.interestOrLatePayment;
+    const courses = [...new Set([...(group.courses || []), ...(receipts.courses || [])].filter(Boolean))];
     rows.push({
-      key: `finance-${key}`,
+      key: `finance-${hashText(identityKey)}`,
       sourceFinance: true,
       matchedKey: matched?.key || '',
       name: matched?.name || first.studentName || 'Aluno sem nome',
       cpf: matched?.cpf || first.cpf || '',
       ra: matched?.ra || first.ra || '',
-      course: matched?.course || first.course || '-',
+      course: courses.length > 1 ? `${courses.length} cursos` : matched?.course || courses[0] || first.course || '-',
       localStatus: matched?.localStatus || 'Fonte sede',
       debtValue: due,
       isDebt: due > 0.009,
-      overdueMonths: group.periods.map(financialPeriodLabel).join(', '),
-      billed: group.amount,
-      received: receipts.amount,
+      overdueMonths: duePeriods.map((item) => `${financialPeriodLabel(item.period)} (${formatMoney(item.due)})`).join(', '),
+      billed,
+      received,
+      receivedApplied,
       interestOrLatePayment,
-      periods: group.periods,
+      periods: periods.map((item) => item.period),
+      duePeriods,
       billingRecords: group.records,
       receiptRecords: receipts.records,
     });
@@ -5092,6 +5413,167 @@ function buildFinancialPosition(visibleRows = state.allRows) {
     debtRows: rows.filter((row) => row.isDebt).sort((a, b) => b.debtValue - a.debtValue),
     paidRows: rows.filter((row) => !row.isDebt),
   };
+}
+
+function groupFinancialRecordsByStudent(records) {
+  return records.reduce((map, record) => {
+    const studentKey = financialStudentKey(record);
+    const period = financialPeriodKey(record);
+    const group = map.get(studentKey) || { amount: 0, records: [], periods: {} };
+    const periodGroup = group.periods[period] || { amount: 0, records: [] };
+    const amount = Number(record.amount || 0);
+    group.amount += amount;
+    group.records.push(record);
+    periodGroup.amount += amount;
+    periodGroup.records.push(record);
+    group.periods[period] = periodGroup;
+    map.set(studentKey, group);
+    return map;
+  }, new Map());
+}
+
+function groupFinancialRecordsByIdentity(records) {
+  return records.reduce((map, record) => {
+    const identityKey = financialIdentityKey(record);
+    if (!identityKey) return map;
+    const period = financialPeriodKey(record);
+    const group = map.get(identityKey) || { amount: 0, records: [], periods: {}, courses: [] };
+    const periodGroup = group.periods[period] || { amount: 0, records: [] };
+    const amount = Number(record.amount || 0);
+    const course = financialCourseKey(record);
+    group.amount += amount;
+    group.records.push(record);
+    if (course && !group.courses.includes(cleanText(record.course))) group.courses.push(cleanText(record.course));
+    periodGroup.amount += amount;
+    periodGroup.records.push(record);
+    group.periods[period] = periodGroup;
+    map.set(identityKey, group);
+    return map;
+  }, new Map());
+}
+
+function reconcileFinancialGroup(billingGroup, receiptGroup) {
+  const billingWithInstallment = billingGroup.records.filter((record) => normalizeInstallmentId(record.installmentId));
+  if (!billingWithInstallment.length) {
+    return reconcileByPeriodAmounts(billingGroup.periods, receiptGroup.periods || {}, billingGroup.amount, receiptGroup.amount || 0);
+  }
+
+  const receiptByInstallment = groupRecordsByInstallment(receiptGroup.records || []);
+  const duePeriods = [];
+  let receivedApplied = 0;
+
+  billingWithInstallment.forEach((billingRecord) => {
+    const installmentKey = normalizeInstallmentId(billingRecord.installmentId);
+    const receiptMatch = receiptByInstallment.get(installmentKey);
+    const paid = Number(receiptMatch?.amount || 0);
+    const billed = Number(billingRecord.amount || 0);
+    receivedApplied += Math.min(paid, billed);
+    const due = Math.max(0, billed - paid);
+    if (due > 0.009) {
+      addDuePeriod(duePeriods, financialPeriodKey(billingRecord), due);
+    }
+  });
+
+  const billingWithoutInstallment = billingGroup.records.filter((record) => !normalizeInstallmentId(record.installmentId));
+  const receiptWithoutInstallment = (receiptGroup.records || []).filter((record) => !normalizeInstallmentId(record.installmentId));
+  if (billingWithoutInstallment.length) {
+    const fallback = reconcileByPeriodAmounts(
+      periodGroupsFromRecords(billingWithoutInstallment),
+      periodGroupsFromRecords(receiptWithoutInstallment),
+      sumBy(billingWithoutInstallment, (record) => record.amount),
+      sumBy(receiptWithoutInstallment, (record) => record.amount),
+    );
+    fallback.duePeriods.forEach((item) => addDuePeriod(duePeriods, item.period, item.due));
+    receivedApplied += fallback.receivedApplied;
+  }
+
+  const billed = Number(billingGroup.amount || 0);
+  const received = Number(receiptGroup.amount || 0);
+  const periods = Object.entries(billingGroup.periods)
+    .map(([period, periodGroup]) => ({ period, ...periodGroup }))
+    .sort((a, b) => collator.compare(a.period, b.period));
+  const due = sumBy(duePeriods, (item) => item.due);
+  return {
+    periods,
+    billed,
+    received,
+    receivedApplied: Math.min(receivedApplied, billed),
+    duePeriods: duePeriods.sort((a, b) => collator.compare(a.period, b.period)),
+    due,
+    interestOrLatePayment: Math.max(0, received - billed),
+  };
+}
+
+function reconcileByPeriodAmounts(billingPeriods = {}, receiptPeriods = {}, billed = 0, received = 0) {
+  const periods = Object.entries(billingPeriods)
+    .map(([period, periodGroup]) => ({ period, ...periodGroup }))
+    .sort((a, b) => collator.compare(a.period, b.period));
+  let receiptBalance = Object.entries(receiptPeriods).reduce((balance, [period, receiptPeriod]) => {
+    if (billingPeriods[period]) return balance;
+    return balance + Number(receiptPeriod.amount || 0);
+  }, 0);
+  let receivedApplied = 0;
+  const duePeriods = [];
+  const provisionalDue = periods.map((periodGroup) => {
+    const samePeriodReceived = Number(receiptPeriods[periodGroup.period]?.amount || 0);
+    const samePeriodApplied = Math.min(samePeriodReceived, periodGroup.amount);
+    receiptBalance += Math.max(0, samePeriodReceived - periodGroup.amount);
+    receivedApplied += samePeriodApplied;
+    return {
+      ...periodGroup,
+      due: Math.max(0, periodGroup.amount - samePeriodApplied),
+    };
+  });
+  provisionalDue.forEach((periodGroup) => {
+    const extraApplied = Math.min(receiptBalance, periodGroup.due);
+    receiptBalance -= extraApplied;
+    receivedApplied += extraApplied;
+    const due = Math.max(0, periodGroup.due - extraApplied);
+    if (due > 0.009) addDuePeriod(duePeriods, periodGroup.period, due);
+  });
+  return {
+    periods,
+    billed: Number(billed || 0),
+    received: Number(received || 0),
+    receivedApplied: Math.min(receivedApplied, Number(billed || 0)),
+    duePeriods,
+    due: sumBy(duePeriods, (item) => item.due),
+    interestOrLatePayment: Math.max(0, Number(received || 0) - Number(billed || 0)),
+  };
+}
+
+function periodGroupsFromRecords(records) {
+  return records.reduce((periods, record) => {
+    const period = financialPeriodKey(record);
+    const group = periods[period] || { amount: 0, records: [] };
+    group.amount += Number(record.amount || 0);
+    group.records.push(record);
+    periods[period] = group;
+    return periods;
+  }, {});
+}
+
+function groupRecordsByInstallment(records) {
+  return records.reduce((map, record) => {
+    const key = normalizeInstallmentId(record.installmentId);
+    if (!key) return map;
+    const group = map.get(key) || { amount: 0, records: [] };
+    group.amount += Number(record.amount || 0);
+    group.records.push(record);
+    map.set(key, group);
+    return map;
+  }, new Map());
+}
+
+function addDuePeriod(duePeriods, period, due) {
+  const existing = duePeriods.find((item) => item.period === period);
+  if (existing) existing.due += Number(due || 0);
+  else duePeriods.push({ period, due: Number(due || 0) });
+}
+
+function financialPeriodKey(record) {
+  const date = financialRecordDate(record);
+  return date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}` : normalize(record.competence || 'sem-periodo');
 }
 
 function groupFinancialRecords(records) {
@@ -5115,7 +5597,8 @@ function findStudentForFinancial(record) {
     if (byCpf) return byCpf;
   }
   if (record.ra) {
-    const byRa = chooseStudentCandidate(state.allRows.filter((row) => normalize(row.ra) === normalize(record.ra)), record);
+    const normalizedRa = normalizeRa(record.ra);
+    const byRa = chooseStudentCandidate(state.allRows.filter((row) => normalizeRa(row.ra) === normalizedRa), record);
     if (byRa) return byRa;
   }
   if (record.studentName) {
@@ -5136,7 +5619,26 @@ function chooseStudentCandidate(candidates, record = {}) {
   return unique.length === 1 ? unique[0] : null;
 }
 
-function financialRecordDate(record) {
+function financialRecordDate(record, preferredKind = '') {
+  const kind = preferredKind || record.kind || record.sourceKind || '';
+  if (kind === 'receipts') {
+    return parseBrazilianDate(record.paymentDate) ||
+      parseBrazilianDate(record.date) ||
+      parseFinancialPeriod(record.competence) ||
+      parseBrazilianDate(record.dueDate);
+  }
+  if (kind === 'billing') {
+    return parseBrazilianDate(record.date) ||
+      parseFinancialPeriod(record.competence) ||
+      parseBrazilianDate(record.dueDate) ||
+      parseBrazilianDate(record.paymentDate);
+  }
+  if (kind === 'repasses') {
+    return parseBrazilianDate(record.paymentDate) ||
+      parseBrazilianDate(record.date) ||
+      parseFinancialPeriod(record.competence) ||
+      parseBrazilianDate(record.dueDate);
+  }
   return parseFinancialPeriod(record.competence) ||
     parseBrazilianDate(record.date) ||
     parseBrazilianDate(record.dueDate) ||
@@ -5182,7 +5684,12 @@ function parseFinancialPeriod(value) {
     dez: 11,
     dezembro: 11,
   };
-  const named = normalize(text).match(/([a-z]+)[/-]?(\d{2,4})/);
+  const readableText = normalize(text)
+    .replace(/\./g, '')
+    .replace(/\s+de\s+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const named = readableText.match(/([a-z]+)[\s_/-]+(\d{2,4})/);
   if (named && monthNames[named[1]] !== undefined) {
     const year = Number(named[2].length === 2 ? `20${named[2]}` : named[2]);
     return new Date(year, monthNames[named[1]], 1);
@@ -5214,6 +5721,17 @@ function repasseRows(filter) {
 }
 
 function repasseReconciliation(filter, currentRepasseTotal = 0) {
+  if (!Number(filter.year || 0)) {
+    return {
+      baseFilter: allHistoryFilter(),
+      baseReceived: totalFinancialRecords(state.store.receipts, allHistoryFilter()),
+      expectedMin: 0,
+      expectedMax: 0,
+      rate: 0,
+      rateLabel: 'Histórico',
+      tone: 'cyan',
+    };
+  }
   const month = Number(filter.month || new Date().getMonth() + 1);
   const monthFilter = { month, year: Number(filter.year || new Date().getFullYear()) };
   const baseFilter = previousMonthFilter(monthFilter);
@@ -5347,6 +5865,7 @@ function receiptRepasseSeries(filter) {
 function totalFinancialRecords(records, filter) {
   return records.reduce((total, record) => {
     const date = financialRecordDate(record);
+    if (!date && !Number(filter.year || 0) && !Number(filter.month || 0)) return total + Number(record.amount || 0);
     return matchesPeriod(date, filter) ? total + Number(record.amount || 0) : total;
   }, 0);
 }
@@ -6241,6 +6760,10 @@ function moduleTitle(title, subtitle) {
         <h1>${escapeHtml(title)}</h1>
         <span>${escapeHtml(subtitle)}</span>
       </div>
+      <div class="module-title-actions">
+        <button class="mini-button" type="button" data-quick-module="inteligencia">Início</button>
+        <button class="mini-button solid-mini" type="button" data-open-mega-menu>Menu principal</button>
+      </div>
     </header>
   `;
 }
@@ -6248,6 +6771,7 @@ function moduleTitle(title, subtitle) {
 function moduleTitleIcon(title) {
   const normalized = normalize(title);
   if (normalized.includes('indicador')) return '▥';
+  if (normalized.includes('atendimento')) return '▧';
   if (normalized.includes('aluno') || normalized.includes('acompanhamento')) return '▦';
   if (normalized.includes('financeiro') || normalized.includes('pagamento') || normalized.includes('repass')) return '▨';
   if (normalized.includes('curso')) return '▧';
@@ -6522,6 +7046,62 @@ function teacherRowTemplate(teacher) {
   `;
 }
 
+function serviceStatusOptions(selected = 'Novo') {
+  return ['Novo', 'Em atendimento', 'Direcionado para sede', 'Respondido', 'Finalizado']
+    .map((status) => `<option ${status === selected ? 'selected' : ''}>${status}</option>`)
+    .join('');
+}
+
+function servicePriorityItems(tickets) {
+  return tickets
+    .filter((ticket) => !['Finalizado', 'Respondido'].includes(ticket.status))
+    .sort((a, b) => {
+      const lateA = a.deadline && new Date(a.deadline) < startOfToday() ? 1 : 0;
+      const lateB = b.deadline && new Date(b.deadline) < startOfToday() ? 1 : 0;
+      return lateB - lateA || new Date(a.deadline || a.requestedAt) - new Date(b.deadline || b.requestedAt);
+    })
+    .slice(0, 8)
+    .map((ticket) => {
+      const late = ticket.deadline && new Date(ticket.deadline) < startOfToday();
+      return `<div class="decision-signal ${late ? 'danger' : 'warning'}"><strong>${escapeHtml(ticket.studentName)}</strong><span>${escapeHtml(ticket.problem)} · ${escapeHtml(ticket.status)} · prazo ${escapeHtml(ticket.deadline || 'sem prazo')}</span></div>`;
+    });
+}
+
+function serviceTicketRowTemplate(ticket) {
+  const student = rowByKey(ticket.studentKey);
+  const phone = student?.phone || '';
+  return `
+    <tr>
+      <td>
+        <button class="text-button" type="button" data-open-student="${escapeHtml(ticket.studentKey)}">
+          ${escapeHtml(ticket.studentName)}
+          <span>RA ${escapeHtml(ticket.ra || '-')} · ${escapeHtml(ticket.course || '-')}</span>
+        </button>
+      </td>
+      <td>${escapeHtml(ticket.protocol || '-')}</td>
+      <td>${escapeHtml(ticket.problem)}</td>
+      <td>${escapeHtml(formatDate(ticket.requestedAt))}<span class="subtext">Prazo: ${escapeHtml(formatDate(ticket.deadline) || '-')}</span></td>
+      <td>${escapeHtml(ticket.attendant || '-')}<span class="subtext">${escapeHtml(ticket.sector || '-')}</span></td>
+      <td>
+        <textarea class="table-input" rows="2" data-service-response="${escapeHtml(ticket.id)}">${escapeHtml(ticket.response || '')}</textarea>
+      </td>
+      <td>
+        <select class="table-input badge-select ${serviceStatusClass(ticket.status)}" data-service-status="${escapeHtml(ticket.id)}">
+          ${serviceStatusOptions(ticket.status)}
+        </select>
+        ${normalizePhone(phone) ? `<a class="mini-link" href="${serviceWhatsAppUrl({ ...ticket, phone })}" target="mendes_flor_whatsapp_unico" data-whatsapp-link>WhatsApp aluno</a>` : ''}
+      </td>
+    </tr>
+  `;
+}
+
+function serviceStatusClass(status) {
+  const normalized = normalize(status);
+  if (normalized.includes('final') || normalized.includes('respond')) return 'green';
+  if (normalized.includes('sede')) return 'yellow';
+  return 'cyan';
+}
+
 function auditItems() {
   if (state.store.auditTrail.length) {
     return state.store.auditTrail
@@ -6748,6 +7328,12 @@ async function saveOperationalStore() {
   }
 }
 
+async function refreshOperationalData() {
+  await loadOperationalStore(true);
+  render();
+  toast('Dados do banco atualizados para os cálculos.');
+}
+
 function normalizeStore(input = {}) {
   return {
     ...defaultStore(),
@@ -6757,6 +7343,7 @@ function normalizeStore(input = {}) {
     courses: Array.isArray(input.courses) ? input.courses.map(normalizeCourse) : [],
     leads: Array.isArray(input.leads) ? input.leads.map(normalizeLead) : [],
     teachers: Array.isArray(input.teachers) ? input.teachers.map(normalizeTeacher) : [],
+    serviceTickets: Array.isArray(input.serviceTickets) ? input.serviceTickets.map(normalizeServiceTicket) : [],
     localStudents: Array.isArray(input.localStudents) ? input.localStudents : [],
     schedule: Array.isArray(input.schedule) ? input.schedule : [],
     exams: Array.isArray(input.exams) ? input.exams : [],
@@ -6765,9 +7352,9 @@ function normalizeStore(input = {}) {
     snapshots: Array.isArray(input.snapshots) ? input.snapshots.map(normalizeSnapshot) : [],
     taskStatus: input.taskStatus && typeof input.taskStatus === 'object' ? input.taskStatus : {},
     importHistory: Array.isArray(input.importHistory) ? input.importHistory.map(normalizeImportHistory) : [],
-    billing: Array.isArray(input.billing) ? input.billing.map((item) => normalizeStoredFinancialRecord(item, 'billing')) : [],
-    receipts: Array.isArray(input.receipts) ? input.receipts.map((item) => normalizeStoredFinancialRecord(item, 'receipts')) : [],
-    repasses: Array.isArray(input.repasses) ? input.repasses.map((item) => normalizeStoredFinancialRecord(item, 'repasses')) : [],
+    billing: normalizeFinancialCollection(input.billing, 'billing'),
+    receipts: normalizeFinancialCollection(input.receipts, 'receipts'),
+    repasses: normalizeFinancialCollection(input.repasses, 'repasses'),
     auditTrail: Array.isArray(input.auditTrail) ? input.auditTrail : [],
     settings: input.settings || {},
   };
@@ -6831,6 +7418,27 @@ function normalizeDecision(item = {}) {
   };
 }
 
+function normalizeServiceTicket(ticket = {}) {
+  return {
+    id: cleanText(ticket.id) || cryptoId(),
+    studentKey: cleanText(ticket.studentKey),
+    studentName: cleanText(ticket.studentName || ticket.student) || 'Aluno não identificado',
+    cpf: cleanText(ticket.cpf),
+    ra: cleanText(ticket.ra),
+    course: cleanText(ticket.course),
+    protocol: cleanText(ticket.protocol),
+    problem: cleanText(ticket.problem),
+    requestedAt: cleanText(ticket.requestedAt) || new Date().toISOString().slice(0, 10),
+    deadline: cleanText(ticket.deadline),
+    attendant: cleanText(ticket.attendant),
+    sector: cleanText(ticket.sector),
+    response: cleanText(ticket.response),
+    status: cleanText(ticket.status) || 'Novo',
+    createdAt: cleanText(ticket.createdAt) || new Date().toISOString(),
+    updatedAt: cleanText(ticket.updatedAt) || new Date().toISOString(),
+  };
+}
+
 function normalizeTeacher(teacher = {}) {
   return {
     id: cleanText(teacher.id) || cryptoId(),
@@ -6867,24 +7475,33 @@ function normalizeLead(lead = {}) {
   };
 }
 
-function normalizeStoredFinancialRecord(record = {}, kind = 'billing') {
+function normalizeStoredFinancialRecord(record = {}, kind = 'billing', index = 0) {
+  const inferred = normalizeFinancialRecord(
+    record,
+    kind,
+    index,
+    cleanText(record.importFile || record.__sheetName || ''),
+    cleanText(record.importedAt) || new Date().toISOString(),
+  );
   const normalized = {
     id: cleanText(record.id),
-    importedAt: cleanText(record.importedAt),
-    importFile: cleanText(record.importFile),
-    competence: cleanText(record.competence),
-    date: cleanText(record.date),
-    dueDate: cleanText(record.dueDate),
-    paymentDate: cleanText(record.paymentDate),
-    description: cleanText(record.description),
-    studentName: cleanText(record.studentName),
-    cpf: cleanText(record.cpf),
-    ra: cleanText(record.ra),
-    course: cleanText(record.course),
-    amount: Number(record.amount || 0),
-    rawJson: cleanText(record.rawJson),
+    kind: cleanText(record.kind || record.sourceKind) || kind,
+    importedAt: cleanText(record.importedAt) || inferred.importedAt,
+    importFile: cleanText(record.importFile || record.__sheetName) || inferred.importFile,
+    competence: cleanText(record.competence) || inferred.competence,
+    date: cleanText(record.date) || inferred.date,
+    dueDate: cleanText(record.dueDate) || inferred.dueDate,
+    paymentDate: cleanText(record.paymentDate) || inferred.paymentDate,
+    description: cleanText(record.description) || inferred.description,
+    studentName: cleanText(record.studentName) || inferred.studentName,
+    cpf: cleanText(record.cpf) || inferred.cpf,
+    ra: cleanText(record.ra) || inferred.ra,
+    course: cleanText(record.course) || inferred.course,
+    installmentId: cleanText(record.installmentId) || inferred.installmentId,
+    amount: parseMoney(record.amount) || Number(record.amount || 0) || inferred.amount,
+    rawJson: cleanText(record.rawJson) || JSON.stringify(record),
   };
-  normalized.id = normalized.id || financialRecordId(kind, normalized, 0);
+  normalized.id = normalized.id || financialRecordId(kind, normalized, index);
   return normalized;
 }
 
@@ -6895,6 +7512,7 @@ function defaultStore() {
     courses: [],
     leads: [],
     teachers: [],
+    serviceTickets: [],
     localStudents: [],
     schedule: [],
     exams: [],
@@ -7173,6 +7791,11 @@ function exportDataset(kind) {
       rows: state.filteredRows.filter(isRetentionEligible),
       headers: ['name', 'cpf', 'ra', 'course', 'avaAccess', 'avaLastAccessDate', 'avaDaysNumber', 'phone', 'email'],
     },
+    atendimentos: {
+      filename: 'atendimentos-alunos.csv',
+      rows: state.store.serviceTickets,
+      headers: ['studentName', 'cpf', 'ra', 'course', 'protocol', 'problem', 'requestedAt', 'deadline', 'attendant', 'sector', 'response', 'status'],
+    },
     cursos: {
       filename: 'catalogo-cursos.csv',
       rows: getCourseCatalog().map((course) => ({
@@ -7365,6 +7988,11 @@ function overdueWhatsAppUrl(row) {
   return `https://web.whatsapp.com/send?phone=${normalizePhone(row.phone)}&text=${encodeURIComponent(message)}`;
 }
 
+function serviceWhatsAppUrl(ticket) {
+  const message = `Olá, ${firstName(ticket.studentName)}! Tudo bem? Aqui é da MENDES & FLOR EDUCACIONAL - Polo UniFECAF. Estamos acompanhando sua solicitação${ticket.protocol ? ` protocolo ${ticket.protocol}` : ''}: ${ticket.problem}. Situação atual: ${ticket.status}.`;
+  return `https://web.whatsapp.com/send?phone=${normalizePhone(ticket.phone)}&text=${encodeURIComponent(message)}`;
+}
+
 function firstName(value) {
   return cleanText(value).split(/\s+/)[0] || '';
 }
@@ -7395,7 +8023,10 @@ function noValue(value) {
 function parseMoney(value) {
   const text = cleanText(value);
   if (!text || text === '-') return 0;
-  return Number.parseFloat(text.replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.')) || 0;
+  const cleaned = text.replace(/[^\d,.-]/g, '');
+  if (!cleaned) return 0;
+  if (cleaned.includes(',')) return Number.parseFloat(cleaned.replace(/\./g, '').replace(',', '.')) || 0;
+  return Number.parseFloat(cleaned) || 0;
 }
 
 function formatMoney(value) {
@@ -7409,6 +8040,17 @@ function formatCompactMoney(value) {
 function formatDateTime(value) {
   if (!value) return '-';
   return new Date(value).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+function formatDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? cleanText(value) : date.toLocaleDateString('pt-BR');
+}
+
+function startOfToday() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
 function formatTime(value) {

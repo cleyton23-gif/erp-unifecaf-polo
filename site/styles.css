@@ -2549,6 +2549,24 @@ body.mega-menu-open {
   font-weight: 760;
 }
 
+.module-title-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.module-title-actions .mini-button {
+  border-color: rgba(255, 255, 255, 0.36);
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.module-title-actions .solid-mini {
+  background: #ffffff;
+  color: #004a99;
+}
+
 .module-window-title + .metric-grid,
 .module-window-title + .quick-access-grid,
 .module-window-title + .bi-filter-bar {
@@ -2577,6 +2595,16 @@ body.mega-menu-open {
     flex-direction: column;
     min-height: 0;
     padding: 18px;
+  }
+
+  .module-title-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .module-title-actions .mini-button {
+    flex: 1 1 120px;
+    justify-content: center;
   }
 
   .module-title-icon {
@@ -3134,6 +3162,30 @@ body.mega-menu-open {
   padding: 7px 8px;
   background: #ffffff;
   font: inherit;
+}
+
+.badge-select {
+  min-height: 30px;
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.badge-select.green {
+  border-color: #9fd7c2;
+  background: var(--green-soft);
+  color: #086c4a;
+}
+
+.badge-select.cyan {
+  border-color: #a6dbe5;
+  background: var(--cyan-soft);
+  color: #0f6273;
+}
+
+.badge-select.yellow {
+  border-color: #f4d686;
+  background: var(--yellow-soft);
+  color: #795700;
 }
 
 .money-input {

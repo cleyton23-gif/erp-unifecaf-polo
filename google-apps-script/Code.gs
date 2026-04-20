@@ -38,6 +38,27 @@ const ERP_TABS = {
       'updatedAt',
     ],
   },
+  serviceTickets: {
+    name: 'ERP_Atendimentos',
+    headers: [
+      'id',
+      'studentKey',
+      'studentName',
+      'cpf',
+      'ra',
+      'course',
+      'protocol',
+      'problem',
+      'requestedAt',
+      'deadline',
+      'attendant',
+      'sector',
+      'response',
+      'status',
+      'createdAt',
+      'updatedAt',
+    ],
+  },
   courses: {
     name: 'ERP_Cursos',
     headers: [
@@ -191,6 +212,7 @@ const ERP_TABS = {
       'cpf',
       'ra',
       'course',
+      'installmentId',
       'amount',
       'rawJson',
     ],
@@ -208,6 +230,7 @@ const ERP_TABS = {
       'cpf',
       'ra',
       'course',
+      'installmentId',
       'amount',
       'rawJson',
     ],
@@ -226,6 +249,7 @@ const ERP_TABS = {
       'cpf',
       'ra',
       'course',
+      'installmentId',
       'amount',
       'rawJson',
     ],
@@ -405,6 +429,7 @@ function readState_() {
   return {
     overrides: readOverrides_(),
     retention: readRetention_(),
+    serviceTickets: readArray_(ERP_TABS.serviceTickets),
     courses: readArray_(ERP_TABS.courses),
     teachers: readArray_(ERP_TABS.teachers),
     leads: readArray_(ERP_TABS.leads),
@@ -416,9 +441,9 @@ function readState_() {
     snapshots: readArray_(ERP_TABS.snapshots),
     taskStatus: readSettingsObject_('taskStatus'),
     importHistory: readArray_(ERP_TABS.importHistory),
-    billing: readArray_(ERP_TABS.billing),
-    receipts: readArray_(ERP_TABS.receipts),
-    repasses: readArray_(ERP_TABS.repasses),
+    billing: readSourceOrErpRows_(ERP_TABS.billing, ['Faturamento', 'Faturamentos']),
+    receipts: readSourceOrErpRows_(ERP_TABS.receipts, ['Recebimento', 'Recebimentos', 'Recebimeto']),
+    repasses: readSourceOrErpRows_(ERP_TABS.repasses, ['Repasse', 'Repasses', 'Valores Repassados']),
     auditTrail: readArray_(ERP_TABS.auditTrail),
     settings: readSettings_(),
   };
@@ -438,6 +463,7 @@ function readUsers_() {
 function writeState_(state) {
   writeOverrides_(state.overrides || {});
   writeRetention_(state.retention || {});
+  writeArray_(ERP_TABS.serviceTickets, state.serviceTickets || []);
   writeArray_(ERP_TABS.courses, state.courses || []);
   writeArray_(ERP_TABS.teachers, state.teachers || []);
   writeArray_(ERP_TABS.leads, state.leads || []);
@@ -449,9 +475,9 @@ function writeState_(state) {
   writeArray_(ERP_TABS.snapshots, state.snapshots || []);
   writeSettingsObject_('taskStatus', state.taskStatus || {});
   writeArray_(ERP_TABS.importHistory, state.importHistory || []);
-  writeArray_(ERP_TABS.billing, state.billing || []);
-  writeArray_(ERP_TABS.receipts, state.receipts || []);
-  writeArray_(ERP_TABS.repasses, state.repasses || []);
+  // Faturamento, Recebimento e Repasse sao abas-fonte preenchidas pelo polo
+  // com dados vindos da sede. O sistema le essas abas para calcular indicadores,
+  // mas nao regrava o conteudo para nao apagar historico colado manualmente.
   writeArray_(ERP_TABS.auditTrail, state.auditTrail || []);
   writeSettings_(state.settings || {});
 }
@@ -574,7 +600,28 @@ function writeSettingsObject_(key, value) {
 
 function readArray_(definition) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(definition.name);
-  return rowsToObjects_(sheet.getDataRange().getValues());
+  return rowsToObjectsFromSheet_(sheet);
+}
+
+function readSourceOrErpRows_(definition, sourceNames) {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const sourceRows = [];
+  sourceNames.forEach((name) => {
+    const sheet = spreadsheet.getSheetByName(name);
+    if (!sheet || sheet.getLastRow() < 2) return;
+    rowsToObjectsFromSheet_(sheet).forEach((row) => sourceRows.push(row));
+  });
+  if (sourceRows.length) return sourceRows;
+  return readArray_(definition);
+}
+
+function rowsToObjectsFromSheet_(sheet) {
+  if (!sheet) return [];
+  const sheetName = sheet.getName();
+  return rowsToObjects_(sheet.getDataRange().getValues()).map((row) => ({
+    ...row,
+    __sheetName: sheetName,
+  }));
 }
 
 function writeArray_(definition, rows) {
@@ -594,9 +641,10 @@ function writeArray_(definition, rows) {
 
 function rowsToObjects_(values) {
   if (!values || values.length < 2) return [];
-  const headers = values[0].map((value) => String(value || '').trim());
+  const headerIndex = detectHeaderIndex_(values);
+  const headers = values[headerIndex].map((value) => String(value || '').trim());
   return values
-    .slice(1)
+    .slice(headerIndex + 1)
     .filter((row) => row.some((cell) => cell !== '' && cell !== null))
     .map((row) =>
       headers.reduce((object, header, index) => {
@@ -604,6 +652,67 @@ function rowsToObjects_(values) {
         return object;
       }, {}),
     );
+}
+
+function detectHeaderIndex_(values) {
+  let bestIndex = 0;
+  let bestScore = -1;
+  let bestFilled = 0;
+  values.forEach((row, index) => {
+    const cells = row.map((cell) => String(cell || '').trim()).filter(Boolean);
+    if (cells.length < 2) return;
+    const score = cells.reduce((total, cell) => {
+      const normalized = normalizeHeader_(cell);
+      const directHeaders = [
+        'ra',
+        'ra do aluno',
+        'cpf',
+        'cpf do aluno',
+        'nome',
+        'nome do aluno',
+        'curso',
+        'parcela',
+        'id da parcela',
+        'valor',
+        'valor pago',
+        'valor faturado',
+        'data pagamento',
+        'data faturado',
+        'repasse',
+        'repasse final',
+        'total recebido',
+        'total faturado',
+      ];
+      if (directHeaders.indexOf(normalized) !== -1) return total + 3;
+      if (
+        normalized.indexOf('aluno') !== -1 ||
+        normalized.indexOf('curso') !== -1 ||
+        normalized.indexOf('competencia') !== -1 ||
+        normalized.indexOf('periodo') !== -1 ||
+        normalized.indexOf('receb') !== -1 ||
+        normalized.indexOf('fatur') !== -1 ||
+        normalized.indexOf('repasse') !== -1
+      ) {
+        return total + 1;
+      }
+      return total;
+    }, 0);
+    if (score > bestScore || (score === bestScore && cells.length > bestFilled)) {
+      bestIndex = index;
+      bestScore = score;
+      bestFilled = cells.length;
+    }
+  });
+  return bestScore >= 3 ? bestIndex : 0;
+}
+
+function normalizeHeader_(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function valueForSheet_(value) {
