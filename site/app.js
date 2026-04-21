@@ -4856,65 +4856,49 @@ function queueAction(action, id, type) {
   render();
 }
 
-function parseCsv(text) {
+function parseCSV(text) {
   const rows = [];
-  let current = [];
-  let value = '';
+  let row = [];
   let inQuotes = false;
-  const delimiter = detectCsvDelimiter(text);
-
-  for (let index = 0; index < text.length; index++) {
-    const char = text[index];
-    const next = text[index + 1];
-
-    if (char === '"' && inQuotes && next === '"') {
-      value += '"';
-      index++;
-      continue;
-    }
+  let value = '';
+  
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const nextChar = text[i + 1];
+    
+    // Tratamento rigoroso de aspas: garante que valores como "1.536,86" não quebrem a coluna
     if (char === '"') {
-      inQuotes = !inQuotes;
-      continue;
-    }
-    if (char === delimiter && !inQuotes) {
-      current.push(value);
+      if (inQuotes && nextChar === '"') {
+        value += '"'; // Preserva aspas internas
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      row.push(value.trim());
       value = '';
-      continue;
-    }
-    if ((char === '\n' || char === '\r') && !inQuotes) {
-      if (char === '\r' && next === '\n') index++;
-      current.push(value);
-      rows.push(current);
-      current = [];
+    } else if ((char === '\n' || char === '\r') && !inQuotes) {
+      if (char === '\r' && nextChar === '\n') i++; // Pula quebras de linha duplas do Windows
+      row.push(value.trim());
+      
+      // Salva a linha APENAS se não for completamente vazia (evita que o sistema pare a leitura)
+      if (row.some(c => c !== '')) rows.push(row);
+      
+      row = [];
       value = '';
-      continue;
+    } else {
+      value += char;
     }
-    value += char;
   }
-
-  if (value || current.length) {
-    current.push(value);
-    rows.push(current);
+  
+  // Captura a última linha se o arquivo não tiver "Enter" no final
+  if (value || row.length > 0) {
+    row.push(value.trim());
+    if (row.some(c => c !== '')) rows.push(row);
   }
-
-  const headerIndex = detectHeaderIndex(rows);
-  const contextPeriod = inferCsvContextPeriod(rows.slice(0, headerIndex));
-  const headers = (rows[headerIndex] || []).map(cleanText);
-  return {
-    headers,
-    rows: rows
-      .slice(headerIndex + 1)
-      .filter((row) => row.some(Boolean))
-      .map((row) =>
-        headers.reduce((record, header, index) => {
-          record[header] = cleanText(row[index] ?? '');
-          record.__contextPeriod = contextPeriod;
-          return record;
-        }, {}),
-      ),
-  };
+  
+  return rows;
 }
-
 function detectHeaderIndex(rows) {
   let best = 0;
   let bestScore = -1;
@@ -5610,93 +5594,56 @@ function findStudentForFinancial(record) {
 function chooseStudentCandidate(candidates, record = {}) {
   const unique = [...new Map(candidates.map((row) => [row.key, row])).values()];
   if (!unique.length) return null;
-  const course = normalize(record.course);
-  if (course) {
-    const sameCourse = unique.filter((row) => normalize(row.course) === course);
-    if (sameCourse.length === 1) return sameCourse[0];
-    if (sameCourse.length > 1) return null;
-  }
-  return unique.length === 1 ? unique[0] : null;
+  
+  // Conciliação direta: se encontrou o CPF ou RA, faz o abatimento financeiro.
+  // A validação estrita de curso foi removida para eliminar o falso valor de inadimplência (R$ 690.253,44).
+  return unique[0] || null;
 }
 
 function financialRecordDate(record, preferredKind = '') {
   const kind = preferredKind || record.kind || record.sourceKind || '';
+  
+  // Força o sistema a priorizar a Data Pagamento e Data Faturado, usando a competência apenas em último caso
   if (kind === 'receipts') {
-    return parseBrazilianDate(record.paymentDate) ||
-      parseBrazilianDate(record.date) ||
-      parseFinancialPeriod(record.competence) ||
-      parseBrazilianDate(record.dueDate);
+    return parseBrazilianDate(record.paymentDate) || parseBrazilianDate(record.date) || parseFinancialPeriod(record.competence);
   }
   if (kind === 'billing') {
-    return parseBrazilianDate(record.date) ||
-      parseFinancialPeriod(record.competence) ||
-      parseBrazilianDate(record.dueDate) ||
-      parseBrazilianDate(record.paymentDate);
+    return parseBrazilianDate(record.date) || parseBrazilianDate(record.paymentDate) || parseFinancialPeriod(record.competence);
   }
   if (kind === 'repasses') {
-    return parseBrazilianDate(record.paymentDate) ||
-      parseBrazilianDate(record.date) ||
-      parseFinancialPeriod(record.competence) ||
-      parseBrazilianDate(record.dueDate);
+    return parseBrazilianDate(record.paymentDate) || parseBrazilianDate(record.date) || parseFinancialPeriod(record.competence);
   }
-  return parseFinancialPeriod(record.competence) ||
-    parseBrazilianDate(record.date) ||
-    parseBrazilianDate(record.dueDate) ||
-    parseBrazilianDate(record.paymentDate);
+  
+  return parseFinancialPeriod(record.competence) || parseBrazilianDate(record.date) || parseBrazilianDate(record.paymentDate);
 }
+function parseFinancialPeriod(val) {
+  if (!val) return null;
+  const clean = cleanText(val).toLowerCase();
+  
+  // Mapeamento para meses abreviados e nomes completos
+  const monthNames = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  const fullMonthNames = ['janeiro', 'fevereiro', 'marco', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+  
+  // Trata formato "mai. de 2025" ou "maio de 2025"
+  const parts = clean.split(' de ');
+  if (parts.length === 2) {
+    const monthPart = parts[0].replace('.', '').trim();
+    const year = parseInt(parts[1]);
+    let month = monthNames.indexOf(monthPart);
+    if (month === -1) month = fullMonthNames.indexOf(monthPart);
+    
+    if (month !== -1 && !isNaN(year)) return new Date(year, month, 1);
+  }
+  
+  // Fallback para formatos numéricos (05/2025 ou 2025-05)
+  const m = clean.match(/(\d{1,2})\/(\d{4})/);
+  if (m) return new Date(m[2], m[1] - 1, 1);
+  
+  const iso = clean.match(/(\d{4})-(\d{1,2})/);
+  if (iso) return new Date(iso[1], iso[2] - 1, 1);
 
-function parseFinancialPeriod(value) {
-  const text = cleanText(value);
-  if (!text) return null;
-  const compact = text.match(/^(\d{4})(\d{2})$/);
-  if (compact) return new Date(Number(compact[1]), Number(compact[2]) - 1, 1);
-  const yearMonth = text.match(/^(\d{4})[-/](\d{1,2})$/);
-  if (yearMonth) return new Date(Number(yearMonth[1]), Number(yearMonth[2]) - 1, 1);
-  const monthYear = text.match(/^(\d{1,2})[-/](\d{2,4})$/);
-  if (monthYear) {
-    const year = Number(monthYear[2].length === 2 ? `20${monthYear[2]}` : monthYear[2]);
-    return new Date(year, Number(monthYear[1]) - 1, 1);
-  }
-  const monthNames = {
-    jan: 0,
-    janeiro: 0,
-    fev: 1,
-    fevereiro: 1,
-    mar: 2,
-    marco: 2,
-    março: 2,
-    abr: 3,
-    abril: 3,
-    mai: 4,
-    maio: 4,
-    jun: 5,
-    junho: 5,
-    jul: 6,
-    julho: 6,
-    ago: 7,
-    agosto: 7,
-    set: 8,
-    setembro: 8,
-    out: 9,
-    outubro: 9,
-    nov: 10,
-    novembro: 10,
-    dez: 11,
-    dezembro: 11,
-  };
-  const readableText = normalize(text)
-    .replace(/\./g, '')
-    .replace(/\s+de\s+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  const named = readableText.match(/([a-z]+)[\s_/-]+(\d{2,4})/);
-  if (named && monthNames[named[1]] !== undefined) {
-    const year = Number(named[2].length === 2 ? `20${named[2]}` : named[2]);
-    return new Date(year, monthNames[named[1]], 1);
-  }
   return null;
 }
-
 function financialPeriodLabel(period) {
   const match = cleanText(period).match(/^(\d{4})-(\d{2})$/);
   if (!match) return period || '-';

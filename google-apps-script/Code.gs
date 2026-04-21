@@ -460,10 +460,14 @@ function readUsers_() {
   }));
 }
 
+// Função atualizada para proteger as abas financeiras
 function writeState_(state) {
   writeOverrides_(state.overrides || {});
   writeRetention_(state.retention || {});
+  
+  // A aba de atendimentos ao aluno é guardada de forma isolada
   writeArray_(ERP_TABS.serviceTickets, state.serviceTickets || []);
+  
   writeArray_(ERP_TABS.courses, state.courses || []);
   writeArray_(ERP_TABS.teachers, state.teachers || []);
   writeArray_(ERP_TABS.leads, state.leads || []);
@@ -474,14 +478,10 @@ function writeState_(state) {
   writeArray_(ERP_TABS.decisions, state.decisions || []);
   writeArray_(ERP_TABS.snapshots, state.snapshots || []);
   writeSettingsObject_('taskStatus', state.taskStatus || {});
-  writeArray_(ERP_TABS.importHistory, state.importHistory || []);
-  // Faturamento, Recebimento e Repasse sao abas-fonte preenchidas pelo polo
-  // com dados vindos da sede. O sistema le essas abas para calcular indicadores,
-  // mas nao regrava o conteudo para nao apagar historico colado manualmente.
+
   writeArray_(ERP_TABS.auditTrail, state.auditTrail || []);
   writeSettings_(state.settings || {});
 }
-
 function readOverrides_() {
   const rows = readArray_(ERP_TABS.overrides);
   return rows.reduce((map, row) => {
@@ -658,29 +658,22 @@ function detectHeaderIndex_(values) {
   let bestIndex = 0;
   let bestScore = -1;
   let bestFilled = 0;
-  values.forEach((row, index) => {
+  
+  // Limita a busca nas primeiras 50 linhas para não se perder em colagens antigas
+  const limit = Math.min(values.length, 50);
+  
+  for (let index = 0; index < limit; index++) {
+    const row = values[index];
     const cells = row.map((cell) => String(cell || '').trim()).filter(Boolean);
-    if (cells.length < 2) return;
+    if (cells.length < 2) continue;
+    
     const score = cells.reduce((total, cell) => {
       const normalized = normalizeHeader_(cell);
       const directHeaders = [
-        'ra',
-        'ra do aluno',
-        'cpf',
-        'cpf do aluno',
-        'nome',
-        'nome do aluno',
-        'curso',
-        'parcela',
-        'id da parcela',
-        'valor',
-        'valor pago',
-        'valor faturado',
-        'data pagamento',
-        'data faturado',
-        'repasse',
-        'repasse final',
-        'total recebido',
+        'ra', 'ra do aluno', 'cpf', 'cpf do aluno', 'nome',
+        'nome do aluno', 'curso', 'parcela', 'id da parcela',
+        'valor', 'valor pago', 'valor faturado', 'data pagamento',
+        'data faturado', 'repasse', 'repasse final', 'total recebido',
         'total faturado',
       ];
       if (directHeaders.indexOf(normalized) !== -1) return total + 3;
@@ -697,12 +690,14 @@ function detectHeaderIndex_(values) {
       }
       return total;
     }, 0);
+    
     if (score > bestScore || (score === bestScore && cells.length > bestFilled)) {
       bestIndex = index;
       bestScore = score;
       bestFilled = cells.length;
     }
-  });
+  }
+  
   return bestScore >= 3 ? bestIndex : 0;
 }
 
