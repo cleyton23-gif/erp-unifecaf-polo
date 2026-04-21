@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>MENDES &amp; FLOR EDUCACIONAL - Polo UniFECAF</title>
+    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <section id="loginView" class="login-view">
+      <form id="loginForm" class="login-card">
+        <div class="login-brand">
+          <img src="./assets/campus.png" alt="MENDES &amp; FLOR EDUCACIONAL - Polo UniFECAF" />
+          <div>
+            <p>Sistema de Gestão Educacional</p>
+            <h1>MENDES &amp; FLOR EDUCACIONAL</h1>
+          </div>
+        </div>
+        <p class="login-subtitle">Acesse sua conta para operar o polo</p>
+        <label>
+          Usuário
+          <input id="loginUser" value="admin" autocomplete="username" />
+        </label>
+        <label>
+          Senha
+          <input id="loginPassword" type="password" value="admin" autocomplete="current-password" />
+        </label>
+        <button type="submit">Entrar</button>
+        <small>Acesso protegido para a equipe do polo.</small>
+      </form>
+    </section>
+
+    <main id="appView" class="erp-shell" hidden>
+      <header class="erp-header">
+        <div class="brand-area">
+          <span class="brand-mark">MF</span>
+          <div>
+            <strong>MENDES &amp; FLOR EDUCACIONAL - Polo UniFECAF</strong>
+            <span id="sourceStatus">Carregando planilha</span>
+          </div>
+        </div>
+
+        <nav class="top-nav" aria-label="Atalhos principais">
+          <button id="megaMenuButton" class="mega-menu-trigger" type="button" aria-controls="megaMenu" aria-expanded="false">
+            <span aria-hidden="true">▦</span>
+            Módulos
+          </button>
+          <button class="nav-link" type="button" data-icon="▤" data-module="matriculas" data-view="crm">Kanban</button>
+          <button class="nav-link" type="button" data-icon="▥" data-module="retencao">Fila diária</button>
+          <button class="nav-link" type="button" data-icon="▧" data-module="agenda">Agenda</button>
+        </nav>
+
+        <div class="header-actions">
+          <span id="userStatus" class="welcome-label">Bem-vindo, Administrador</span>
+          <label class="compact-field">
+            Perfil
+            <select id="profileSelect">
+              <option value="admin">Administrador</option>
+              <option value="financeiro">Financeiro</option>
+              <option value="consultor">Atendimento</option>
+            </select>
+          </label>
+          <button id="changePasswordButton" class="ghost-button" type="button">Alterar senha</button>
+          <button id="logoutButton" class="ghost-button" type="button">Sair</button>
+        </div>
+      </header>
+
+      <section id="megaMenu" class="mega-menu" role="dialog" aria-modal="true" aria-labelledby="megaMenuTitle" hidden>
+        <div class="mega-menu-backdrop" data-mega-close></div>
+        <div class="mega-menu-panel">
+          <header class="mega-menu-header">
+            <div>
+              <p class="portal-kicker">Módulos do Polo</p>
+              <h2 id="megaMenuTitle">Escolha a área de trabalho</h2>
+              <span>MENDES &amp; FLOR EDUCACIONAL - Polo UniFECAF</span>
+            </div>
+            <button id="megaMenuClose" class="mega-close" type="button" data-mega-close aria-label="Fechar menu">×</button>
+          </header>
+
+          <div class="mega-menu-grid">
+            <article class="mega-section">
+              <div class="mega-section-title"><span>▤</span><strong>Comercial / Captação</strong></div>
+              <button type="button" data-quick-module="matriculas" data-view="crm">Funil de vendas <small>Kanban de candidatos</small></button>
+              <button type="button" data-quick-module="matriculas" data-view="crm">Lista de candidatos <small>Leads e contatos locais</small></button>
+              <button type="button" data-quick-module="agenda">Agendar visitas <small>Organização da rotina comercial</small></button>
+              <button type="button" data-quick-module="metas">Campanhas e origens <small>Metas e desempenho</small></button>
+            </article>
+
+            <article class="mega-section">
+              <div class="mega-section-title"><span>▦</span><strong>Secretaria / Matrículas</strong></div>
+              <button type="button" data-quick-module="acompanhamento">Alunos matriculados <small>Base ativa e dados do polo</small></button>
+              <button type="button" data-quick-module="matriculas" data-view="matricula">Boletos e taxa <small>Confirmação manual pelo polo</small></button>
+              <button type="button" data-admin-module="cursos">Catálogo de cursos <small>Ofertas cadastradas</small></button>
+              <button type="button" data-quick-module="acompanhamento">Trancamentos e cancelamentos <small>Status e histórico do aluno</small></button>
+            </article>
+
+            <article class="mega-section">
+              <div class="mega-section-title"><span>▥</span><strong>Acompanhamento</strong></div>
+              <button type="button" data-quick-module="retencao">Fila diária <small>Alunos com alerta no AVA</small></button>
+              <button type="button" data-dashboard-focus="ava">Mapa de acesso ao AVA <small>Amarelo e vermelho</small></button>
+              <button type="button" data-quick-module="retencao">Registro de contatos <small>Motivo, canal e responsável</small></button>
+              <button type="button" data-quick-module="atendimento">Atendimento <small>Protocolos e solicitações à sede</small></button>
+            </article>
+
+            <article class="mega-section">
+              <div class="mega-section-title"><span>▧</span><strong>Agendamento e Infraestrutura</strong></div>
+              <button type="button" data-quick-module="avaliacoes">Mapa de provas <small>Reservas e disciplinas</small></button>
+              <button type="button" data-quick-module="agenda">Agendar aulas <small>Sala, docente e lotação</small></button>
+              <button type="button" data-quick-module="fila">Fila do dia <small>Check-in e finalização</small></button>
+              <button type="button" data-quick-module="avaliacoes">Computadores e TI <small>Disponíveis e em manutenção</small></button>
+            </article>
+
+            <article class="mega-section" data-financial-only>
+              <div class="mega-section-title"><span>▨</span><strong>Financeiro</strong></div>
+              <button type="button" data-quick-module="financeiro">Dashboard financeiro <small>Faturamento e recebimento</small></button>
+              <button type="button" data-dashboard-focus="inadimplencia">Pagamentos em atraso <small>Alunos e meses em aberto</small></button>
+              <button type="button" data-admin-module="repasse">Valores repassados <small>Histórico da sede</small></button>
+            </article>
+
+            <article class="mega-section">
+              <div class="mega-section-title"><span>▩</span><strong>Planejamento e Admin</strong></div>
+              <button type="button" data-quick-module="inteligencia">Início do sistema <small>Portal e prioridades</small></button>
+              <button type="button" data-quick-module="bi">Indicadores do polo <small>Censo, metas e finanças</small></button>
+              <button type="button" data-quick-module="metas">Metas comerciais <small>Mensal, anual e previsão</small></button>
+              <button type="button" data-admin-module="seguranca">Usuários e acessos <small>Consultores e permissões</small></button>
+              <button id="refreshButton" type="button">Sincronizar planilha <small>Atualizar dados da sede</small></button>
+              <button type="button" data-admin-module="financeiro">Importar planilhas <small>Faturamento, recebimento e repasse</small></button>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="alerts" class="alert-stack" aria-live="polite"></section>
+
+      <section class="erp-layout">
+        <aside class="side-panel">
+          <div class="source-card">
+            <img src="./assets/campus.png" alt="Campus universitário" />
+            <div>
+              <p class="eyebrow">Dados confiáveis</p>
+              <strong>Planilha da sede + dados do polo</strong>
+              <span id="syncStamp">Aguardando sincronização</span>
+            </div>
+          </div>
+
+          <label class="field">
+            Busca geral
+            <input
+              id="searchInput"
+              type="search"
+              placeholder="Nome, RA, CPF, curso ou telefone"
+              autocomplete="off"
+            />
+          </label>
+
+          <label class="field">
+            Status
+            <select id="statusFilter">
+              <option value="">Todos</option>
+            </select>
+          </label>
+
+          <label class="field">
+            Curso
+            <select id="courseFilter">
+              <option value="">Todos</option>
+            </select>
+          </label>
+
+          <label class="field">
+            Período de início
+            <select id="cohortFilter">
+              <option value="">Todos</option>
+            </select>
+          </label>
+
+          <label class="field">
+            Unidade
+            <select id="unitFilter">
+              <option value="">Todas</option>
+            </select>
+          </label>
+
+          <label class="field">
+            Situação de pagamento
+            <select id="debtFilter">
+              <option value="">Todos</option>
+              <option value="SIM">Somente em atraso</option>
+              <option value="NÃO">Somente em dia</option>
+            </select>
+          </label>
+
+          <div class="quick-tabs" aria-label="Atalhos">
+            <button class="segment active" type="button" data-segment="todos">Todos</button>
+            <button class="segment" type="button" data-segment="risco">Atenção</button>
+            <button class="segment" type="button" data-segment="override">Dados do polo</button>
+            <button class="segment" type="button" data-segment="sem-acesso">Sem acesso AVA</button>
+          </div>
+
+          <label class="upload-box">
+            Importar outra planilha
+            <input id="csvInput" type="file" accept=".csv,text/csv" />
+          </label>
+        </aside>
+
+        <section class="module-host">
+          <section id="module-inteligencia" class="module active"></section>
+          <section id="module-bi" class="module"></section>
+          <section id="module-acompanhamento" class="module"></section>
+          <section id="module-retencao" class="module"></section>
+          <section id="module-atendimento" class="module"></section>
+          <section id="module-financeiro" class="module"></section>
+          <section id="module-repasse" class="module"></section>
+          <section id="module-cursos" class="module"></section>
+          <section id="module-matriculas" class="module"></section>
+          <section id="module-metas" class="module"></section>
+          <section id="module-agenda" class="module"></section>
+          <section id="module-avaliacoes" class="module"></section>
+          <section id="module-fila" class="module"></section>
+          <section id="module-seguranca" class="module"></section>
+        </section>
+      </section>
+    </main>
+
+    <aside id="studentDrawer" class="drawer" aria-live="polite">
+      <button id="closeDrawer" class="icon-button" type="button" aria-label="Fechar detalhes">x</button>
+      <div id="drawerContent" class="drawer-empty">
+        <p class="eyebrow">Aluno</p>
+        <h2>Selecione um registro</h2>
+        <p>Os dados e ações rápidas aparecem aqui.</p>
+      </div>
+    </aside>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <div id="modalOverlay" class="modal-overlay" hidden></div>
+    <div id="loadingOverlay" class="loading-overlay" hidden>
+      <div class="spinner" aria-hidden="true"></div>
+      <strong>Carregando dados do polo...</strong>
+    </div>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>

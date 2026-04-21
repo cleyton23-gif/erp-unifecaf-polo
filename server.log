@@ -1,1 +1,1038 @@
-2026-04-21T12:50:10.609Z Painel local em http://localhost:5173
+2026-04-17T02:20:22.434Z Painel local em http://localhost:5173
+2026-04-17T02:22:29.720Z Painel local em http://localhost:5173
+2026-04-17T02:22:50.317Z Painel local em http://localhost:5173
+2026-04-17T02:23:33.075Z Painel local em http://localhost:5173
+2026-04-17T02:24:39.687Z Painel local em http://localhost:5173
+2026-04-17T02:25:13.384Z Painel local em http://localhost:5173
+2026-04-17T02:26:27.464Z Painel local em http://localhost:5173
+2026-04-17T02:29:53.929Z Painel local em http://localhost:5173
+2026-04-17T02:56:46.674Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:81:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T02:57:34.600Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:81:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T02:58:11.579Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:81:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T03:15:09.330Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:81:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T03:15:41.473Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:81:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T03:16:40.166Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:81:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T03:16:40.168Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:81:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T03:23:28.856Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T03:23:28.879Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T03:23:53.001Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T03:25:04.814Z Painel local em http://localhost:5173
+2026-04-17T03:31:01.124Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T03:31:01.189Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T03:48:30.276Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T05:23:36.737Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T05:23:36.747Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T05:29:27.702Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T05:29:36.018Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T11:22:36.563Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T11:22:47.120Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T23:36:24.695Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T23:36:34.618Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T23:46:18.901Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T23:46:18.914Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T23:47:50.523Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-17T23:47:50.569Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T01:33:02.184Z Painel local em http://localhost:5173
+2026-04-18T01:33:12.694Z Painel local em http://localhost:5173
+2026-04-18T01:34:01.199Z Painel local em http://localhost:5173
+2026-04-18T01:34:01.227Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T01:37:31.524Z Painel local em http://localhost:5173
+2026-04-18T02:19:45.042Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T02:19:45.042Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T02:37:57.499Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T02:38:12.055Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T02:48:30.631Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T02:48:42.628Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T04:08:40.371Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T04:08:40.371Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T04:09:33.206Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T04:10:48.413Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T04:12:07.927Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T04:12:07.927Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T04:12:53.343Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T04:43:10.608Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T04:43:20.050Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T05:14:47.058Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T05:14:56.438Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T05:19:42.510Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T05:22:31.562Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T05:22:31.590Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T10:09:10.928Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T10:09:31.029Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T10:09:57.699Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T10:10:13.198Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T10:17:24.608Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T10:17:40.522Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T10:28:57.626Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T10:29:11.090Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T10:35:14.870Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T10:35:30.236Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T11:07:22.772Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T11:07:22.772Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T11:08:16.825Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T11:09:37.323Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T11:09:37.323Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T17:46:10.372Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T17:46:10.372Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T17:47:45.594Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T17:48:38.425Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T17:48:38.547Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T18:04:06.707Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T18:04:06.723Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T18:05:25.886Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T18:05:50.445Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T18:05:50.658Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T18:10:42.159Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T18:10:42.302Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T18:28:17.120Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T18:28:17.130Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T18:42:38.357Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T18:42:38.357Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T18:53:56.832Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T18:53:56.858Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T19:55:44.557Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T19:55:44.651Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T20:07:38.374Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T20:07:38.674Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T23:31:28.616Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T23:31:28.616Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T23:42:14.104Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-18T23:42:14.104Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T00:06:18.586Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T00:06:18.602Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T01:45:24.894Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T01:45:24.894Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T02:21:49.318Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T02:21:49.329Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T11:54:30.573Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T11:54:30.575Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T12:24:52.104Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T12:24:52.104Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T17:03:10.995Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T17:03:10.995Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T17:50:05.080Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T17:50:05.082Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T17:50:51.811Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T17:59:25.251Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T17:59:25.259Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T18:02:24.856Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T18:02:44.672Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T18:30:17.787Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T18:30:17.787Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T18:50:02.314Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T18:50:02.330Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T19:23:02.448Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T19:23:02.485Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T19:49:59.441Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T19:49:59.474Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T23:20:19.906Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-19T23:20:19.909Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-20T11:34:56.088Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-20T11:34:56.088Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-20T11:36:58.825Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-20T11:39:09.401Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-20T11:39:23.117Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-20T11:39:23.305Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-20T11:41:10.312Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-21T02:28:41.132Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-21T14:05:53.425Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-21T14:07:09.099Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-21T14:19:16.027Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+2026-04-21T14:22:41.054Z Painel local em http://localhost:5173
+2026-04-21T14:29:52.320Z server error Error: listen EADDRINUSE: address already in use :::5173
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at file:///C:/Users/cleyt/Documents/sofware%20UniFECAF/tools/local-server.mjs:98:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)

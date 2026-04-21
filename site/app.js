@@ -679,10 +679,6 @@ function enrichRow(row, index) {
 
 function render() {
   state.filteredRows = applyFilters(state.allRows);
-  
-  // ADICIONAR ESTA LINHA: Garante que os números financeiros sejam atualizados junto com os filtros
-  if (canSeeFinancial()) buildFinancialPosition(state.filteredRows); 
-
   syncDecisionFoundation();
   renderAlerts();
   renderInteligencia();
@@ -1560,6 +1556,7 @@ function renderFinanceiro() {
   }
 
   const rows = state.filteredRows;
+  const usingLocalFallback = !state.remoteState;
   const sourceFinance = buildFinancialPosition(rows);
   const hasFinancialSource = hasBillingReceiptSource();
   const debtRows = sourceFinance.debtRows;
@@ -1589,6 +1586,7 @@ function renderFinanceiro() {
   const billedLifetime = totalFinancialRecords(state.store.billing, allHistoryFilter());
   const receivedLifetime = totalFinancialRecords(state.store.receipts, allHistoryFilter());
   const repasseLifetime = totalFinancialRecords(state.store.repasses, allHistoryFilter());
+  const financeMissingData = !hasFinancialLedgerData();
 
   els.modules.financeiro.innerHTML = `
     ${moduleTitle('Financeiro e valores repassados', hasFinancialSource ? 'Mensalidades calculadas pelas planilhas de faturamento e recebimento.' : 'Importe faturamento e recebimento para ativar os indicadores financeiros.')}
@@ -1599,10 +1597,23 @@ function renderFinanceiro() {
         <select name="biYear">${yearOptions(filter.year)}</select>
         <button type="submit">Atualizar período</button>
       </form>
+      <button class="mini-button" type="button" data-reset-bi-filter>Todo histórico</button>
       <button class="mini-button" type="button" data-refresh-operational>Atualizar banco</button>
       <button class="mini-button" type="button" data-admin-module="repasse">Ver valores repassados</button>
       <button class="mini-button" type="button" data-export="executivo">Exportar resumo</button>
     </section>
+    ${financeMissingData ? `
+      <section class="decision-signal warning">
+        <strong>Financeiro sem base carregada</strong>
+        <span>As abas Faturamento, Recebimento e Repasse ainda não entraram no estado operacional. Conecte o Apps Script ou importe os CSVs para visualizar os valores reais.</span>
+      </section>
+    ` : ''}
+    ${usingLocalFallback ? `
+      <section class="decision-signal warning">
+        <strong>Fonte local em uso</strong>
+        <span>O sistema ainda não está sincronizado com a sede. Os números abaixo usam o histórico salvo neste navegador até a conexão com o Apps Script ficar ativa.</span>
+      </section>
+    ` : ''}
     <section class="metric-grid">
       ${metricCard('Em dia', paidRows.length, 'Carteira sem atraso', 'green')}
       ${metricCard('Em atraso', debtRows.length, 'Alunos com pagamento em aberto', 'red')}
@@ -1712,6 +1723,7 @@ function renderRepasse() {
   }
 
   const filter = getBiFilter();
+  const usingLocalFallback = !state.remoteState;
   const rows = repasseRows(filter);
   const currentTotal = sumBy(rows, (row) => row.amount);
   const yearTotal = sumBy(repasseRows({ month: 0, year: filter.year }), (row) => row.amount);
@@ -1720,6 +1732,7 @@ function renderRepasse() {
   const previousYearTotal = Number(filter.year || 0) ? sumBy(repasseRows(previousYearFilter(filter)), (row) => row.amount) : 0;
   const grouped = repasseEvolution();
   const reconciliation = repasseReconciliation(filter, currentTotal);
+  const repasseMissingData = !state.store.repasses.length;
   const repasseControls = `
     <section class="finance-subnav">
       <span>Repasse final importado da sede. O sistema exibe o valor real e confere a faixa esperada sobre o recebimento anterior.</span>
@@ -1728,6 +1741,7 @@ function renderRepasse() {
         <select name="biYear">${yearOptions(filter.year)}</select>
         <button type="submit">Atualizar repasse</button>
       </form>
+      <button class="mini-button" type="button" data-reset-bi-filter>Todo histórico</button>
       <button class="mini-button" type="button" data-refresh-operational>Atualizar banco</button>
       <button class="mini-button" type="button" data-export="repasse">Exportar repasse</button>
     </section>
@@ -1736,6 +1750,18 @@ function renderRepasse() {
   els.modules.repasse.innerHTML = `
     ${moduleTitle('Valores repassados', 'Histórico dos valores enviados pela sede ao polo.')}
     ${repasseControls}
+    ${repasseMissingData ? `
+      <section class="decision-signal warning">
+        <strong>Repasse sem base carregada</strong>
+        <span>Não há linhas de Repasse no estado atual. Quando a aba da sede for conectada, o histórico e o acumulado vão aparecer aqui.</span>
+      </section>
+    ` : ''}
+    ${usingLocalFallback ? `
+      <section class="decision-signal warning">
+        <strong>Fonte local em uso</strong>
+        <span>O repasse ainda não está sendo lido do Apps Script. Os valores exibidos abaixo dependem do histórico salvo neste navegador.</span>
+      </section>
+    ` : ''}
     <section class="metric-grid">
       ${metricCard('Valor filtrado', formatMoney(currentTotal), periodLabel(filter), 'green')}
       ${metricCard('Acumulado do ano', formatMoney(yearTotal), yearlyLabel(filter), 'cyan')}
@@ -1812,140 +1838,6 @@ function renderRepasse() {
           </table>
         </div>
       </article>
-    </section>
-  `;
-}
-
-function renderCursos() {
-  const catalog = getCourseCatalog();
-  els.modules.cursos.innerHTML = `
-    ${moduleTitle('Cursos', 'Lista de ofertas e informações acadêmicas do polo.')}
-    <section class="metric-grid">
-      ${metricCard('Cursos cadastrados', catalog.length, 'Sede + inclusões locais', 'cyan')}
-      ${metricCard('EAD', catalog.filter((course) => course.modality === 'EAD').length, 'Modalidade a distância', 'green')}
-      ${metricCard('Presencial', catalog.filter((course) => course.modality === 'Presencial').length, 'Oferta local', 'yellow')}
-      ${metricCard('Locais', catalog.filter((course) => course.local).length, 'Criados pelo polo', 'cyan')}
-    </section>
-    <section class="split-grid">
-      <article class="panel">
-        <div class="panel-heading">
-          <div>${smallTitle('Novo curso', 'Cadastre antes de usar na matrícula')}</div>
-          <span>${catalog.length} opções</span>
-        </div>
-        <form class="inline-form" data-form="course">
-          <input name="name" placeholder="Novo curso" required />
-          <select name="modality">
-            <option>EAD</option>
-            <option>Semipresencial</option>
-            <option>Presencial</option>
-            <option>Pós-graduação</option>
-          </select>
-          <button type="submit">Adicionar</button>
-        </form>
-      </article>
-      <article class="panel">
-        <div class="panel-heading">
-          <div>${smallTitle('Uso dos cursos', 'Curso obrigatório no cadastro do candidato')}</div>
-          <span>Base única</span>
-        </div>
-        <p class="muted">Todo candidato matriculado deve estar vinculado a um curso existente aqui. Assim vendas, acompanhamento e indicadores falam a mesma língua.</p>
-      </article>
-    </section>
-    <section class="table-panel">
-      <div class="panel-heading">
-        <div>${smallTitle('Catálogo de cursos', 'Ofertas e informações acadêmicas')}</div>
-        <span>${catalog.length} cursos</span>
-      </div>
-      <div class="catalog-list wide">
-        ${catalog
-          .slice(0, 160)
-          .map(
-            (course) => `
-              <div class="catalog-item">
-                <div>
-                  <strong>${escapeHtml(course.name)}</strong>
-                  <span>${escapeHtml(course.modality)} - ${course.students} alunos vinculados</span>
-                </div>
-                ${course.local ? `<button type="button" data-delete-course="${escapeHtml(course.name)}">Excluir</button>` : '<span class="badge">Sede</span>'}
-              </div>
-            `,
-          )
-          .join('')}
-      </div>
-    </section>
-  `;
-  return;
-  const leads = state.store.leads;
-  const signed = leads.filter((lead) => lead.stage === 'Matriculado').length;
-  const boletoPending = leads.filter(leadNeedsEnrollmentAction).length;
-  const paymentOk = leads.filter(isLeadEnrollmentSettled).length;
-  els.modules.cursos.innerHTML = `
-    ${moduleTitle('Captação e matrículas', 'Funil visual com contrato, boleto e status de pagamento.')}
-    <section class="metric-grid">
-      ${metricCard('Candidatos ativos', leads.length, 'Base de captação local')}
-      ${metricCard('Contratos assinados', signed, 'Status Matriculado', 'green')}
-      ${metricCard('Matrículas a regularizar', boletoPending, 'Boleto ou baixa pendente', boletoPending ? 'yellow' : 'green')}
-      ${metricCard('Matrículas confirmadas', paymentOk, 'Boleto pago ou isento', 'cyan')}
-    </section>
-    <section class="split-grid">
-      <article class="panel">
-        <div class="panel-heading">
-          <div>${smallTitle('Catálogo central', 'Inclusão, alteração e exclusão local')}</div>
-          <span>${catalog.length} cursos</span>
-        </div>
-        <form class="inline-form" data-form="course">
-          <input name="name" placeholder="Novo curso" required />
-          <select name="modality">
-            <option>EAD</option>
-            <option>Semipresencial</option>
-            <option>Presencial</option>
-            <option>Pós-graduação</option>
-          </select>
-          <button type="submit">Adicionar</button>
-        </form>
-        <div class="catalog-list">
-          ${catalog
-            .slice(0, 80)
-            .map(
-              (course) => `
-                <div class="catalog-item">
-                  <div>
-                    <strong>${escapeHtml(course.name)}</strong>
-                    <span>${escapeHtml(course.modality)} · ${course.students} alunos</span>
-                  </div>
-                  ${course.local ? `<button type="button" data-delete-course="${escapeHtml(course.name)}">Excluir</button>` : '<span class="badge">Sede</span>'}
-                </div>
-              `,
-            )
-            .join('')}
-        </div>
-      </article>
-      <article class="panel">
-        <div class="panel-heading">
-          <div>${smallTitle('Novo candidato', 'Vinculação obrigatória ao catálogo')}</div>
-          <span>${leads.length} registros locais</span>
-        </div>
-        <form class="stack-form" data-form="lead">
-          <input name="name" placeholder="Nome do candidato" required />
-          <input name="phone" placeholder="Telefone" />
-          <select name="course" required>
-            <option value="">Curso validado</option>
-            ${catalog.map((course) => `<option>${escapeHtml(course.name)}</option>`).join('')}
-          </select>
-          <input name="origin" placeholder="Origem comercial" />
-          <select name="stage">${LEAD_STAGES.map((stage) => `<option value="${escapeHtml(stage)}">${escapeHtml(leadStageLabel(stage))}</option>`).join('')}</select>
-          <button type="submit">Salvar candidato</button>
-        </form>
-      </article>
-    </section>
-    <section class="table-panel">
-      <div class="panel-heading">
-        <div>${smallTitle('Funil de captação', 'Conversão em matrícula gera registro local')}</div>
-        <span>${leads.length} candidatos</span>
-      </div>
-      <div class="kanban-board">
-        ${LEAD_STAGES.map((stage) => leadColumn(stage)).join('')}
-      </div>
     </section>
   `;
 }
@@ -3779,6 +3671,15 @@ function handleClick(event) {
     return;
   }
 
+  const resetBiFilter = event.target.closest('[data-reset-bi-filter]');
+  if (resetBiFilter) {
+    updateSettings({ biMonth: 0, biYear: 0 });
+    persist();
+    render();
+    toast('Filtro financeiro voltado para o histórico completo.');
+    return;
+  }
+
   const adminModule = event.target.closest('[data-admin-module]');
   if (adminModule) {
     const module = adminModule.dataset.adminModule;
@@ -4433,7 +4334,7 @@ function normalizeFinancialRecord(row, kind, index, fileName, importedAt) {
 }
 
 function financialAmount(row, kind) {
-  const common = ['Valor', 'Valor Total', 'Total', 'Total Geral', 'Total geral', 'Vlr', 'Vlr.', 'Vlr Total', 'Valor Liquido', 'Líquido', 'Liquido'];
+  const common = ['Valor', 'Valor Total', 'Total', 'Total Geral', 'Total geral'];
   const byKind = {
     billing: ['Valor Faturado', 'ValorFaturado', 'Faturado', 'Valor Mensalidade', 'Mensalidade', 'Parcela', 'Valor Parcela', ...common],
     receipts: ['Valor Pago', 'ValorPago', 'Total Geral', 'Total geral', 'Valor Recebido', 'Recebido', 'Pago', 'Banco', 'Cartao', 'Cartão', ...common],
@@ -4441,34 +4342,22 @@ function financialAmount(row, kind) {
   };
   const direct = parseMoney(getLooseValue(row, byKind[kind] || common));
   if (direct) return direct;
-  
   const bank = parseMoney(getLooseValue(row, ['Banco']));
   const card = parseMoney(getLooseValue(row, ['Cartao', 'Cartão']));
-  if (bank || card) return bank + card;
-
-  // Fallback extremo: varre todas as colunas procurando dinheiro se o nome da coluna mudar
-  const entries = Object.entries(row);
-  for (const [key, val] of entries) {
-    const k = normalize(key);
-    if ((k.includes('valor') || k.includes('pago') || k.includes('faturado') || k.includes('total')) && !k.includes('data') && !k.includes('desconto')) {
-      const money = parseMoney(val);
-      if (money) return money;
-    }
-  }
-  return 0;
+  return bank + card;
 }
 
 function isValidFinancialRecord(record, kind) {
   if (!Number(record.amount || 0)) return false;
   const aggregate = [record.studentName, record.description, record.ra, record.cpf].some((value) => {
     const normalized = normalize(value);
-    return normalized === 'total' || normalized === 'total geral' || normalized === 'resumo' || normalized === 'analitico' || normalized === 'totais';
+    return normalized === 'total' || normalized === 'total geral' || normalized === 'resumo' || normalized === 'analitico';
   });
   if (aggregate) return false;
   if (kind === 'repasses') return true;
-  // Fallback: se não tiver nome, tenta pela descrição
-  return Boolean(record.cpf || record.ra || record.studentName || record.description);
+  return Boolean(record.cpf || record.ra || record.studentName);
 }
+
 function getLooseValue(row, candidates) {
   const entries = Object.entries(row);
   for (const candidate of candidates) {
@@ -4873,44 +4762,62 @@ function queueAction(action, id, type) {
 }
 
 function parseCsv(text) {
-  const lines = [];
-  let row = [];
-  let inQuotes = false;
+  const rows = [];
+  let current = [];
   let value = '';
-  
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-    const nextChar = text[i + 1];
-    
-    if (char === '"') {
-      if (inQuotes && nextChar === '"') { value += '"'; i++; } 
-      else { inQuotes = !inQuotes; }
-    } else if (char === ',' && !inQuotes) {
-      row.push(value.trim());
-      value = '';
-    } else if ((char === '\n' || char === '\r') && !inQuotes) {
-      if (char === '\r' && nextChar === '\n') i++; 
-      row.push(value.trim());
-      if (row.some(c => c !== '')) lines.push(row);
-      row = [];
-      value = '';
-    } else {
-      value += char;
+  let inQuotes = false;
+  const delimiter = detectCsvDelimiter(text);
+
+  for (let index = 0; index < text.length; index++) {
+    const char = text[index];
+    const next = text[index + 1];
+
+    if (char === '"' && inQuotes && next === '"') {
+      value += '"';
+      index++;
+      continue;
     }
+    if (char === '"') {
+      inQuotes = !inQuotes;
+      continue;
+    }
+    if (char === delimiter && !inQuotes) {
+      current.push(value);
+      value = '';
+      continue;
+    }
+    if ((char === '\n' || char === '\r') && !inQuotes) {
+      if (char === '\r' && next === '\n') index++;
+      current.push(value);
+      rows.push(current);
+      current = [];
+      value = '';
+      continue;
+    }
+    value += char;
   }
-  if (value || row.length > 0) {
-    row.push(value.trim());
-    if (row.some(c => c !== '')) lines.push(row);
+
+  if (value || current.length) {
+    current.push(value);
+    rows.push(current);
   }
-  
-  if (lines.length < 2) return { rows: [] };
-  const headers = lines[0];
-  const rows = lines.slice(1).map(line => {
-    const obj = {};
-    headers.forEach((header, index) => { obj[header] = line[index] || ''; });
-    return obj;
-  });
-  return { rows };
+
+  const headerIndex = detectHeaderIndex(rows);
+  const contextPeriod = inferCsvContextPeriod(rows.slice(0, headerIndex));
+  const headers = (rows[headerIndex] || []).map(cleanText);
+  return {
+    headers,
+    rows: rows
+      .slice(headerIndex + 1)
+      .filter((row) => row.some(Boolean))
+      .map((row) =>
+        headers.reduce((record, header, index) => {
+          record[header] = cleanText(row[index] ?? '');
+          record.__contextPeriod = contextPeriod;
+          return record;
+        }, {}),
+      ),
+  };
 }
 
 function detectHeaderIndex(rows) {
@@ -5208,6 +5115,9 @@ function restrictedMessage(module) {
 }
 
 function getBiFilter() {
+  if (!hasFinancialLedgerData()) {
+    return allHistoryFilter();
+  }
   const today = new Date();
   const settings = state.store.settings || {};
   return {
@@ -5246,6 +5156,10 @@ function yearlyLabel(filter) {
 
 function allHistoryFilter() {
   return { month: 0, year: 0 };
+}
+
+function hasFinancialLedgerData() {
+  return Boolean(state.store.billing.length || state.store.receipts.length || state.store.repasses.length);
 }
 
 function filterRowsByPeriod(rows, filter) {
@@ -5608,57 +5522,85 @@ function findStudentForFinancial(record) {
 function chooseStudentCandidate(candidates, record = {}) {
   const unique = [...new Map(candidates.map((row) => [row.key, row])).values()];
   if (!unique.length) return null;
-  
-  // Conciliação direta: se encontrou o CPF ou RA, faz o abatimento financeiro.
-  // A validação estrita de curso foi removida para eliminar o falso valor de inadimplência (R$ 690.253,44).
-  return unique[0] || null;
+  const course = normalize(record.course);
+  if (course) {
+    const sameCourse = unique.filter((row) => normalize(row.course) === course);
+    if (sameCourse.length === 1) return sameCourse[0];
+    if (sameCourse.length > 1) return null;
+  }
+  return unique.length === 1 ? unique[0] : null;
 }
 
 function financialRecordDate(record, preferredKind = '') {
   const kind = preferredKind || record.kind || record.sourceKind || '';
-  
-  const tryParse = (val) => {
-    if (!val) return null;
-    return parseBrazilianDate(val) || parseFinancialPeriod(val);
-  };
-  
   if (kind === 'receipts') {
-    return tryParse(record.paymentDate) || tryParse(record.date) || tryParse(record.competence) || tryParse(record.dueDate);
+    return parseBrazilianDate(record.paymentDate) ||
+      parseBrazilianDate(record.date) ||
+      parseFinancialPeriod(record.competence) ||
+      parseBrazilianDate(record.dueDate);
   }
   if (kind === 'billing') {
-    return tryParse(record.date) || tryParse(record.competence) || tryParse(record.dueDate) || tryParse(record.paymentDate);
+    return parseBrazilianDate(record.date) ||
+      parseFinancialPeriod(record.competence) ||
+      parseBrazilianDate(record.dueDate) ||
+      parseBrazilianDate(record.paymentDate);
   }
   if (kind === 'repasses') {
-    return tryParse(record.paymentDate) || tryParse(record.date) || tryParse(record.competence) || tryParse(record.dueDate);
+    return parseBrazilianDate(record.paymentDate) ||
+      parseBrazilianDate(record.date) ||
+      parseFinancialPeriod(record.competence) ||
+      parseBrazilianDate(record.dueDate);
   }
-  
-  return tryParse(record.competence) || tryParse(record.date) || tryParse(record.dueDate) || tryParse(record.paymentDate);
+  return parseFinancialPeriod(record.competence) ||
+    parseBrazilianDate(record.date) ||
+    parseBrazilianDate(record.dueDate) ||
+    parseBrazilianDate(record.paymentDate);
 }
 
 function parseFinancialPeriod(value) {
   const text = cleanText(value);
   if (!text) return null;
-  
-  const noSpace = text.replace(/\s*([./-])\s*/g, '$1');
-  const compact = noSpace.match(/^(\d{4})(\d{2})$/);
+  const compact = text.match(/^(\d{4})(\d{2})$/);
   if (compact) return new Date(Number(compact[1]), Number(compact[2]) - 1, 1);
-  
-  const yearMonth = noSpace.match(/^(\d{4})[-/.](\d{1,2})$/);
+  const yearMonth = text.match(/^(\d{4})[-/](\d{1,2})$/);
   if (yearMonth) return new Date(Number(yearMonth[1]), Number(yearMonth[2]) - 1, 1);
-  
-  const monthYear = noSpace.match(/^(\d{1,2})[-/.](\d{2,4})$/);
+  const monthYear = text.match(/^(\d{1,2})[-/](\d{2,4})$/);
   if (monthYear) {
     const year = Number(monthYear[2].length === 2 ? `20${monthYear[2]}` : monthYear[2]);
     return new Date(year, Number(monthYear[1]) - 1, 1);
   }
-  
   const monthNames = {
-    jan: 0, janeiro: 0, fev: 1, fevereiro: 1, mar: 2, marco: 2, março: 2,
-    abr: 3, abril: 3, mai: 4, maio: 4, jun: 5, junho: 5,
-    jul: 6, julho: 6, ago: 7, agosto: 7, set: 8, setembro: 8,
-    out: 9, outubro: 9, nov: 10, novembro: 10, dez: 11, dezembro: 11,
+    jan: 0,
+    janeiro: 0,
+    fev: 1,
+    fevereiro: 1,
+    mar: 2,
+    marco: 2,
+    março: 2,
+    abr: 3,
+    abril: 3,
+    mai: 4,
+    maio: 4,
+    jun: 5,
+    junho: 5,
+    jul: 6,
+    julho: 6,
+    ago: 7,
+    agosto: 7,
+    set: 8,
+    setembro: 8,
+    out: 9,
+    outubro: 9,
+    nov: 10,
+    novembro: 10,
+    dez: 11,
+    dezembro: 11,
   };
-  const readableText = normalize(text).replace(/\./g, '').replace(/\s+de\s+/g, ' ').replace(/\s+/g, ' ').trim();
+  const readableText = normalize(text)
+    .replace(/\./g, '')
+    .replace(/\s+de\s+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
   const named = readableText.match(/([a-z]+)[\s_/-]+(\d{2,4})/);
   if (named && monthNames[named[1]] !== undefined) {
     const year = Number(named[2].length === 2 ? `20${named[2]}` : named[2]);
@@ -5667,26 +5609,10 @@ function parseFinancialPeriod(value) {
   return null;
 }
 
-function parseBrazilianDate(value) {
-  const text = cleanText(value);
-  if (!text || text === '-') return null;
-
-  const isoDateOnly = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:T.*)?$/);
-  if (isoDateOnly) {
-    return new Date(Number(isoDateOnly[1]), Number(isoDateOnly[2]) - 1, Number(isoDateOnly[3]));
-  }
-
-  const noSpace = text.replace(/\s*([./-])\s*/g, '$1');
-  const numeric = noSpace.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})(?:T.*|\s.*)?$/);
-  if (numeric) {
-    const year = Number(numeric[3].length === 2 ? `20${numeric[3]}` : numeric[3]);
-    return new Date(year, Number(numeric[2]) - 1, Number(numeric[1]));
-  }
-
-  const iso = new Date(text);
-  if (!Number.isNaN(iso.getTime())) return iso;
-
-  return null;
+function financialPeriodLabel(period) {
+  const match = cleanText(period).match(/^(\d{4})-(\d{2})$/);
+  if (!match) return period || '-';
+  return `${MONTHS[Number(match[2]) - 1]}/${String(match[1]).slice(-2)}`;
 }
 
 function repasseRows(filter) {

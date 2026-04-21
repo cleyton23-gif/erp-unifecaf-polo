@@ -460,14 +460,10 @@ function readUsers_() {
   }));
 }
 
-// Função atualizada para proteger as abas financeiras
 function writeState_(state) {
   writeOverrides_(state.overrides || {});
   writeRetention_(state.retention || {});
-  
-  // A aba de atendimentos ao aluno é guardada de forma isolada
   writeArray_(ERP_TABS.serviceTickets, state.serviceTickets || []);
-  
   writeArray_(ERP_TABS.courses, state.courses || []);
   writeArray_(ERP_TABS.teachers, state.teachers || []);
   writeArray_(ERP_TABS.leads, state.leads || []);
@@ -478,10 +474,14 @@ function writeState_(state) {
   writeArray_(ERP_TABS.decisions, state.decisions || []);
   writeArray_(ERP_TABS.snapshots, state.snapshots || []);
   writeSettingsObject_('taskStatus', state.taskStatus || {});
-
+  writeArray_(ERP_TABS.importHistory, state.importHistory || []);
+  // Faturamento, Recebimento e Repasse sao abas-fonte preenchidas pelo polo
+  // com dados vindos da sede. O sistema le essas abas para calcular indicadores,
+  // mas nao regrava o conteudo para nao apagar historico colado manualmente.
   writeArray_(ERP_TABS.auditTrail, state.auditTrail || []);
   writeSettings_(state.settings || {});
 }
+
 function readOverrides_() {
   const rows = readArray_(ERP_TABS.overrides);
   return rows.reduce((map, row) => {
@@ -606,32 +606,11 @@ function readArray_(definition) {
 function readSourceOrErpRows_(definition, sourceNames) {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   const sourceRows = [];
-  
   sourceNames.forEach((name) => {
     const sheet = spreadsheet.getSheetByName(name);
-    // CORREÇÃO: Lê a aba mesmo que ela pareça vazia ou tenha cabeçalhos estranhos, 
-    // delegando a limpeza pesada para o app.js
-    if (!sheet) return; 
-    
-    // Tenta pegar todas as linhas com dados
-    const range = sheet.getDataRange();
-    if (range.getNumRows() < 2) return;
-    
-    const rawValues = range.getValues();
-    const sheetName = sheet.getName();
-    
-    // Converte manualmente para evitar que o detectHeaderIndex_ bloqueie a leitura
-    const headers = rawValues[0].map((value) => String(value || '').trim());
-    rawValues.slice(1).forEach((row) => {
-      const obj = { __sheetName: sheetName };
-      headers.forEach((header, index) => {
-        if (header) obj[header] = row[index];
-      });
-      // Só adiciona se a linha não for completamente vazia
-      if (Object.keys(obj).length > 1) sourceRows.push(obj);
-    });
+    if (!sheet || sheet.getLastRow() < 2) return;
+    rowsToObjectsFromSheet_(sheet).forEach((row) => sourceRows.push(row));
   });
-  
   if (sourceRows.length) return sourceRows;
   return readArray_(definition);
 }
@@ -679,22 +658,29 @@ function detectHeaderIndex_(values) {
   let bestIndex = 0;
   let bestScore = -1;
   let bestFilled = 0;
-  
-  // Limita a busca nas primeiras 50 linhas para não se perder em colagens antigas
-  const limit = Math.min(values.length, 50);
-  
-  for (let index = 0; index < limit; index++) {
-    const row = values[index];
+  values.forEach((row, index) => {
     const cells = row.map((cell) => String(cell || '').trim()).filter(Boolean);
-    if (cells.length < 2) continue;
-    
+    if (cells.length < 2) return;
     const score = cells.reduce((total, cell) => {
       const normalized = normalizeHeader_(cell);
       const directHeaders = [
-        'ra', 'ra do aluno', 'cpf', 'cpf do aluno', 'nome',
-        'nome do aluno', 'curso', 'parcela', 'id da parcela',
-        'valor', 'valor pago', 'valor faturado', 'data pagamento',
-        'data faturado', 'repasse', 'repasse final', 'total recebido',
+        'ra',
+        'ra do aluno',
+        'cpf',
+        'cpf do aluno',
+        'nome',
+        'nome do aluno',
+        'curso',
+        'parcela',
+        'id da parcela',
+        'valor',
+        'valor pago',
+        'valor faturado',
+        'data pagamento',
+        'data faturado',
+        'repasse',
+        'repasse final',
+        'total recebido',
         'total faturado',
       ];
       if (directHeaders.indexOf(normalized) !== -1) return total + 3;
@@ -711,14 +697,12 @@ function detectHeaderIndex_(values) {
       }
       return total;
     }, 0);
-    
     if (score > bestScore || (score === bestScore && cells.length > bestFilled)) {
       bestIndex = index;
       bestScore = score;
       bestFilled = cells.length;
     }
-  }
-  
+  });
   return bestScore >= 3 ? bestIndex : 0;
 }
 
