@@ -679,6 +679,10 @@ function enrichRow(row, index) {
 
 function render() {
   state.filteredRows = applyFilters(state.allRows);
+  
+  // ADICIONAR ESTA LINHA: Garante que os números financeiros sejam atualizados junto com os filtros
+  if (canSeeFinancial()) buildFinancialPosition(state.filteredRows); 
+
   syncDecisionFoundation();
   renderAlerts();
   renderInteligencia();

@@ -606,11 +606,32 @@ function readArray_(definition) {
 function readSourceOrErpRows_(definition, sourceNames) {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   const sourceRows = [];
+  
   sourceNames.forEach((name) => {
     const sheet = spreadsheet.getSheetByName(name);
-    if (!sheet || sheet.getLastRow() < 2) return;
-    rowsToObjectsFromSheet_(sheet).forEach((row) => sourceRows.push(row));
+    // CORREÇÃO: Lê a aba mesmo que ela pareça vazia ou tenha cabeçalhos estranhos, 
+    // delegando a limpeza pesada para o app.js
+    if (!sheet) return; 
+    
+    // Tenta pegar todas as linhas com dados
+    const range = sheet.getDataRange();
+    if (range.getNumRows() < 2) return;
+    
+    const rawValues = range.getValues();
+    const sheetName = sheet.getName();
+    
+    // Converte manualmente para evitar que o detectHeaderIndex_ bloqueie a leitura
+    const headers = rawValues[0].map((value) => String(value || '').trim());
+    rawValues.slice(1).forEach((row) => {
+      const obj = { __sheetName: sheetName };
+      headers.forEach((header, index) => {
+        if (header) obj[header] = row[index];
+      });
+      // Só adiciona se a linha não for completamente vazia
+      if (Object.keys(obj).length > 1) sourceRows.push(obj);
+    });
   });
+  
   if (sourceRows.length) return sourceRows;
   return readArray_(definition);
 }
